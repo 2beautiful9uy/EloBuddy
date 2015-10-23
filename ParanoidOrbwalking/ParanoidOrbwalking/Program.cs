@@ -6,19 +6,19 @@ using EloBuddy.SDK.Events;
 using EloBuddy.SDK.Menu;
 using EloBuddy.SDK.Menu.Values;
 
-namespace ParaVayne
+namespace ParanoidOrbwalking
 {
     class Program
     {
         static Menu menu;
-
+        
         static float lastaa;
-
+        
         public static void Main(string[] args)
         {
             Loading.OnLoadingComplete += Loading_OnLoadingComplete;
         }
-
+        
         static void Loading_OnLoadingComplete(EventArgs args)
         {
             menu=MainMenu.AddMenu("ParaVayne","paravayne");
@@ -26,49 +26,56 @@ namespace ParaVayne
             Obj_AI_Base.OnBasicAttack += Obj_AI_Base_OnBasicAttack;
             Game.OnTick += Game_OnTick;
         }
-
+        
         static void Obj_AI_Base_OnBasicAttack(Obj_AI_Base sender, GameObjectProcessSpellCastEventArgs args)
         {
             if (sender.IsMe)
-            {
                 lastaa = Game.Time * 1000;
-            }
         }
 
         static void Game_OnTick(EventArgs args)
         {
             if(menu["combo"].Cast<KeyBind>().CurrentValue)
             {
-                var target = TargetSelector.GetTarget(ObjectManager.Player.AttackRange + 200f,DamageType.Physical);
-                switch (target.IsValidTarget() && !target.IsZombie)
+                switch (ObjectManager.Player.ChampionName.ToLower()=="kalista")
                 {
                     case true:
-                    {
-                        switch (CanAttack)
-                        {
-                            case true:
-                            {
-                                Player.IssueOrder(GameObjectOrder.AttackUnit, target);
-                            }
-                            break;
-                            case false:
-                            {
-                            if (CanMove)
-                                Player.IssueOrder(GameObjectOrder.MoveTo, Game.CursorPos);
-                            }
-                            break;
-                        }
-                    }
+                        Player.IssueOrder(GameObjectOrder.MoveTo, Game.CursorPos);
+                        var target = TargetSelector.GetTarget(ObjectManager.Player.AttackRange + 200f,DamageType.Physical);
+                        if (CanAttack && target.IsValidTarget() && !target.IsZombie)
+                            Player.IssueOrder(GameObjectOrder.AttackUnit, target);
                     break;
                     case false:
-                    {
-                        Player.IssueOrder(GameObjectOrder.MoveTo, Game.CursorPos);
-                    }
+                        Orb();
+                        Chat.Print("Orb");
                     break;
                 }
             }
         }
-
+        
+        static void Orb()
+        {
+            var target = TargetSelector.GetTarget(ObjectManager.Player.AttackRange + 200f,DamageType.Physical);
+            switch (target.IsValidTarget() && !target.IsZombie)
+            {
+                case true:
+                    switch (CanAttack)
+                    {
+                        case true:
+                            Player.IssueOrder(GameObjectOrder.AttackUnit, target);
+                        break;
+                        case false:
+                            if (CanMove)
+                                Player.IssueOrder(GameObjectOrder.MoveTo, Game.CursorPos);
+                        break;
+                    }
+                break;
+                case false:
+                    Player.IssueOrder(GameObjectOrder.MoveTo, Game.CursorPos);
+                break;
+            }
+        }
+        
         static bool CanAttack
         {
             get
@@ -76,7 +83,7 @@ namespace ParaVayne
                 return Game.Time * 1000 > lastaa + ObjectManager.Player.AttackDelay * 1000 - 180f;
             }
         }
-
+        
         static bool CanMove
         {
             get
