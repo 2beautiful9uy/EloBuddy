@@ -23,7 +23,7 @@ namespace ParanoidOrbwalking
         
         static void Loading_OnLoadingComplete(EventArgs args)
         {
-            menu=MainMenu.AddMenu("ParaVayne","paravayne");
+            menu=MainMenu.AddMenu("ParanoidOrbwalking","paraorb");
             menu.Add("combo",new KeyBind("Combo",false,KeyBind.BindTypes.HoldActive,' '));
             Obj_AI_Base.OnBasicAttack += Obj_AI_Base_OnBasicAttack;
             Game.OnTick += Game_OnTick;
