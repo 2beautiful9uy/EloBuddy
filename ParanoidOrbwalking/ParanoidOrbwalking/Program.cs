@@ -37,41 +37,35 @@ namespace ParanoidOrbwalking
         {
             if(menu["combo"].Cast<KeyBind>().CurrentValue)
             {
-                switch (ObjectManager.Player.ChampionName.ToLower()=="kalista")
+                var target = TargetSelector.GetTarget(ObjectManager.Player.AttackRange + 200f,DamageType.Physical);
+                switch (ObjectManager.Player.ChampionName.ToLower())
                 {
-                    case true:
+                    case "kalista":
                         Player.IssueOrder(GameObjectOrder.MoveTo, Game.CursorPos);
-                        var target = TargetSelector.GetTarget(ObjectManager.Player.AttackRange + 200f,DamageType.Physical);
                         if (CanAttack && target.IsValidTarget() && !target.IsZombie)
                             Player.IssueOrder(GameObjectOrder.AttackUnit, target);
                     break;
-                    case false:
-                        Orb();
+                    case "ezreal":
+                        switch (target.IsValidTarget() && !target.IsZombie)
+                        {
+                            case true:
+                                switch (Game.Time * 1000 > lastaa + ObjectManager.Player.AttackDelay * 1000 - 150f)
+                                {
+                                    case true:
+                                        Player.IssueOrder(GameObjectOrder.AttackUnit, target);
+                                    break;
+                                    case false:
+                                        if (Game.Time * 1000 > lastaa + ObjectManager.Player.AttackCastDelay * 1000 - 100f)
+                                            Player.IssueOrder(GameObjectOrder.MoveTo, Game.CursorPos);
+                                    break;
+                                }
+                            break;
+                            case false:
+                                Player.IssueOrder(GameObjectOrder.MoveTo, Game.CursorPos);
+                            break;
+                        }
                     break;
                 }
-            }
-        }
-        
-        static void Orb()
-        {
-            var target = TargetSelector.GetTarget(ObjectManager.Player.AttackRange + 200f,DamageType.Physical);
-            switch (target.IsValidTarget() && !target.IsZombie)
-            {
-                case true:
-                    switch (CanAttack)
-                    {
-                        case true:
-                            Player.IssueOrder(GameObjectOrder.AttackUnit, target);
-                        break;
-                        case false:
-                            if (CanMove)
-                                Player.IssueOrder(GameObjectOrder.MoveTo, Game.CursorPos);
-                        break;
-                    }
-                break;
-                case false:
-                    Player.IssueOrder(GameObjectOrder.MoveTo, Game.CursorPos);
-                break;
             }
         }
         
