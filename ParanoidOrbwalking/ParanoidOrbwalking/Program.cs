@@ -52,7 +52,8 @@ namespace ParanoidOrbwalking
                                         Player.IssueOrder(GameObjectOrder.AttackUnit, target);
                                     break;
                                     case false:
-                                        Player.IssueOrder(GameObjectOrder.MoveTo, Game.CursorPos);
+                                        if (Game.Time * 1000 > lastaa + 1)
+                                            Player.IssueOrder(GameObjectOrder.MoveTo, Game.CursorPos);
                                     break;
                                 }
                             break;
