@@ -111,7 +111,7 @@ namespace ParaOrb
                         break;
                         case false:
                         {
-                            if (Game.Time * 1000 > lastaa + ObjectManager.Player.AttackCastDelay * 1000 - move + menu["cancel"].Cast<Slider>().CurrentValue)
+                            if (Game.Time * 1000 > lastaa + ObjectManager.Player.AttackCastDelay * 1000 - move + (float)(menu["cancel"].Cast<Slider>().CurrentValue))
                             {
                                 Player.IssueOrder(GameObjectOrder.MoveTo, Game.CursorPos);
                             }
