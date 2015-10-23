@@ -27,7 +27,7 @@ namespace ParaOrb
         {
             menu=MainMenu.AddMenu("ParaOrb","paraorb");
             menu.Add("combo",new KeyBind("Combo",false,KeyBind.BindTypes.HoldActive,' '));
-            menu.Add("cancel", new Slider("if you have aa cancel change 0", 0, 0, 30));
+            menu.Add("cancel", new Slider("if you have aa cancel change 0", 0, 0, 20));
             Obj_AI_Base.OnBasicAttack += Obj_AI_Base_OnBasicAttack;
             Game.OnTick += Game_OnTick;
             if (Name == "jinx" || Name == "vayne" || Name == "ezreal" || Name == "kalista")
@@ -89,17 +89,17 @@ namespace ParaOrb
                     break;
                     case "ezreal":
                     {
-                        Orb(100f, target);
+                        Orb(90f, target);
                     }
                     break;
                     case "vayne":
                     {
-                        Orb(80f, target);
+                        Orb(70f, target);
                     }
                     break;
                 	case "jinx":
                     {
-                        Orb(70f, target);
+                        Orb(60f, target);
                     }
                     break;
                 }

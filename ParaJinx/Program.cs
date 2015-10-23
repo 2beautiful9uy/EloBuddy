@@ -20,69 +20,31 @@ namespace ParaJinx
             AllowedCollisionCount = 0, MinimumHitChance = HitChance.High
         };
             
-            static float lastaa;
-            
-            static bool CanAttack { get { return Game.Time * 1000 > lastaa + ObjectManager.Player.AttackDelay * 1000 - 150f; } }
-            
-            public static void Main(string[] args)
+        static float lastaa;
+        
+        static bool CanAttack { get { return Game.Time * 1000 > lastaa + ObjectManager.Player.AttackDelay * 1000 - 150f; } }
+        
+        public static void Main(string[] args)
+        {
+            Loading.OnLoadingComplete += Loading_OnLoadingComplete;
+        }
+        
+        static void Loading_OnLoadingComplete(EventArgs args)
+        {
+            if (ObjectManager.Player.ChampionName.ToLower() == "jinx")
             {
-                Loading.OnLoadingComplete += Loading_OnLoadingComplete;
+                menu=MainMenu.AddMenu("ParaJinx","parajinx");
+                menu.Add("combo",new KeyBind("Combo",false,KeyBind.BindTypes.HoldActive,' '));
+                Obj_AI_Base.OnBasicAttack += Obj_AI_Base_OnBasicAttack;
+                Game.OnTick += Spells;
+                Chat.Print(ObjectManager.Player.ChampionName+" Loaded");
             }
-            
-            static void Loading_OnLoadingComplete(EventArgs args)
-            {
-                if (ObjectManager.Player.ChampionName.ToLower() == "jinx")
-                {
-                    menu=MainMenu.AddMenu("ParaJinx","parajinx");
-                    menu.Add("combo",new KeyBind("Combo",false,KeyBind.BindTypes.HoldActive,' '));
-                    menu.Add("cancel", new Slider("if you have aa cancel change 0", 0, 0, 30));
-                    Obj_AI_Base.OnBasicAttack += Obj_AI_Base_OnBasicAttack;
-                    Game.OnTick += Game_OnTick;
-                    Game.OnTick += Spells;
-                    Chat.Print(ObjectManager.Player.ChampionName+" Loaded");
-                }
-            }
-            
-            static void Obj_AI_Base_OnBasicAttack(Obj_AI_Base sender, GameObjectProcessSpellCastEventArgs args)
-            {
-                if (sender.IsMe) { lastaa = Game.Time * 1000; }
-            }
-
-            static void Game_OnTick(EventArgs args)
-            {
-                if(menu["combo"].Cast<KeyBind>().CurrentValue)
-                {
-                    var unit = TargetSelector.GetTarget(ObjectManager.Player.AttackRange + 200f,DamageType.Physical);
-                    switch (unit.IsValidTarget() && !unit.IsZombie)
-                  {
-                      case true:
-                      {
-                          switch (Game.Time * 1000 > lastaa + ObjectManager.Player.AttackDelay * 1000 - 150f)
-                          {
-                              case true:
-                              {
-                                  Player.IssueOrder(GameObjectOrder.AttackUnit, unit);
-                              }
-                              break;
-                              case false:
-                              {
-                                if (Game.Time * 1000 > lastaa + ObjectManager.Player.AttackCastDelay * 1000 - 70f + (float)(menu["cancel"].Cast<Slider>().CurrentValue))
-                                  {
-                                      Player.IssueOrder(GameObjectOrder.MoveTo, Game.CursorPos);
-                                  }
-                              }
-                              break;
-                          }
-                      }
-                      break;
-                      case false:
-                      {
-                          Player.IssueOrder(GameObjectOrder.MoveTo, Game.CursorPos);
-                      }
-                      break;
-                  }
-                }
-            }
+        }
+        
+        static void Obj_AI_Base_OnBasicAttack(Obj_AI_Base sender, GameObjectProcessSpellCastEventArgs args)
+        {
+            if (sender.IsMe) { lastaa = Game.Time * 1000; }
+        }
 
         static void Spells(EventArgs args)
         {
@@ -99,18 +61,18 @@ namespace ParaJinx
                             {
                                 if (unit.Distance(ObjectManager.Player)<=650f && ObjectManager.Player.AttackRange>550f)
                                 {
-                                    Core.DelayAction(Qcast, (int)(ObjectManager.Player.AttackCastDelay * 1000)-50);
+                                    Core.DelayAction(Qcast, (int)(ObjectManager.Player.AttackCastDelay * 1000)-60);
                                 }
                                 else if (unit.Distance(ObjectManager.Player)>650f && ((ushort)ObjectManager.Player.AttackRange == 524 || (ushort)ObjectManager.Player.AttackRange == 525 || (ushort)ObjectManager.Player.AttackRange == 526))
                                 {
-                                    Core.DelayAction(Qcast, (int)(ObjectManager.Player.AttackCastDelay * 1000)-50);
+                                    Core.DelayAction(Qcast, (int)(ObjectManager.Player.AttackCastDelay * 1000)-60);
                                 }
                             }
                             if (W.IsReady())
                             {
                                 if (unit.Distance(ObjectManager.Player)>200f)
                                 {
-                                    Core.DelayAction(Wcast, (int)(ObjectManager.Player.AttackCastDelay * 1000)-50);
+                                    Core.DelayAction(Wcast, (int)(ObjectManager.Player.AttackCastDelay * 1000)-60);
                                 }
                             }
                         }
