@@ -47,7 +47,6 @@ namespace ParanoidOrbwalking
                     break;
                     case false:
                         Orb();
-                        Chat.Print("Orb");
                     break;
                 }
             }
