@@ -14,8 +14,6 @@ namespace ParaOrb
         
         static float lastaa;
         
-        static bool included;
-        
         static bool CanAttack { get { return Game.Time * 1000 > lastaa + ObjectManager.Player.AttackDelay * 1000 - 150f; } }
         
         static string Name { get { return ObjectManager.Player.ChampionName.ToLower(); } }
@@ -27,21 +25,19 @@ namespace ParaOrb
         
         static void Loading_OnLoadingComplete(EventArgs args)
         {
-            if (Name != "jinx" || Name != "vayne" || Name != "ezreal" || Name != "kalista")
-            {
-                included = false;
-                Chat.Print(ObjectManager.Player.ChampionName+" Loaded. No perfect calculations for: "+ObjectManager.Player.ChampionName);
-            }
-            else
-            {
-                included = true;
-                Chat.Print(ObjectManager.Player.ChampionName+" Loaded");
-            }
             menu=MainMenu.AddMenu("ParaOrb","paraorb");
             menu.Add("combo",new KeyBind("Combo",false,KeyBind.BindTypes.HoldActive,' '));
             menu.Add("cancel", new Slider("if you have aa cancel change 0", 0, 0, 30));
             Obj_AI_Base.OnBasicAttack += Obj_AI_Base_OnBasicAttack;
             Game.OnTick += Game_OnTick;
+            if (Name == "jinx" || Name == "vayne" || Name == "ezreal" || Name == "kalista")
+            {
+                Chat.Print(ObjectManager.Player.ChampionName+" Loaded");
+            }
+            else
+            {
+              Chat.Print(ObjectManager.Player.ChampionName+" Loaded. No perfect calculations for: "+ObjectManager.Player.ChampionName);
+            }
         }
         
         static void Obj_AI_Base_OnBasicAttack(Obj_AI_Base sender, GameObjectProcessSpellCastEventArgs args)
@@ -101,16 +97,17 @@ namespace ParaOrb
                         Orb(80f, target);
                     }
                     break;
-                    case "jinx":
+                	case "jinx":
                     {
                         Orb(70f, target);
                     }
                     break;
                 }
-                if (!included || (Name != "jinx" || Name != "vayne" || Name != "ezreal" || Name != "kalista"))
+                if (Name == "jinx" || Name == "vayne" || Name == "ezreal" || Name == "kalista")
                 {
-                    Orb(40f, target);
+                    return;
                 }
+                Orb(40f, target);
             }
         }
         
