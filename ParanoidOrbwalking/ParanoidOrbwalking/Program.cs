@@ -14,6 +14,8 @@ namespace ParanoidOrbwalking
         
         static float lastaa;
         
+        static bool CanAttack { get { return Game.Time * 1000 > lastaa + ObjectManager.Player.AttackDelay * 1000 - 180f; } }
+        
         public static void Main(string[] args)
         {
             Loading.OnLoadingComplete += Loading_OnLoadingComplete;
@@ -46,42 +48,34 @@ namespace ParanoidOrbwalking
                             Player.IssueOrder(GameObjectOrder.AttackUnit, target);
                     break;
                     case "ezreal":
-                        switch (target.IsValidTarget() && !target.IsZombie)
-                        {
-                            case true:
-                                switch (Game.Time * 1000 > lastaa + ObjectManager.Player.AttackDelay * 1000 - 150f)
-                                {
-                                    case true:
-                                        Player.IssueOrder(GameObjectOrder.AttackUnit, target);
-                                    break;
-                                    case false:
-                                        if (Game.Time * 1000 > lastaa + ObjectManager.Player.AttackCastDelay * 1000 - 100f)
-                                            Player.IssueOrder(GameObjectOrder.MoveTo, Game.CursorPos);
-                                    break;
-                                }
-                            break;
-                            case false:
-                                Player.IssueOrder(GameObjectOrder.MoveTo, Game.CursorPos);
-                            break;
-                        }
+                        Orb(100f, 150f, target);
+                    break;
+                    case "vayne":
+                        Orb(80f, 150f, target);
                     break;
                 }
             }
         }
         
-        static bool CanAttack
+        static void Orb(float move, float attack, AIHeroClient unit)
         {
-            get
+            switch (unit.IsValidTarget() && !unit.IsZombie)
             {
-                return Game.Time * 1000 > lastaa + ObjectManager.Player.AttackDelay * 1000 - 180f;
-            }
-        }
-        
-        static bool CanMove
-        {
-            get
-            {
-                return Game.Time * 1000 > lastaa + ObjectManager.Player.AttackCastDelay * 1000 - 40f;
+                case true:
+                    switch (Game.Time * 1000 > lastaa + ObjectManager.Player.AttackDelay * 1000 - attack)
+                    {
+                        case true:
+                            Player.IssueOrder(GameObjectOrder.AttackUnit, unit);
+                        break;
+                        case false:
+                            if (Game.Time * 1000 > lastaa + ObjectManager.Player.AttackCastDelay * 1000 - move)
+                                Player.IssueOrder(GameObjectOrder.MoveTo, Game.CursorPos);
+                        break;
+                    }
+                break;
+                case false:
+                    Player.IssueOrder(GameObjectOrder.MoveTo, Game.CursorPos);
+                break;
             }
         }
     }
