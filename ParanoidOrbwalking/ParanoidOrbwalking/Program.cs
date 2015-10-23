@@ -86,6 +86,11 @@ namespace ParanoidOrbwalking
                         Orb(80f, 150f, target);
                     }
                     break;
+                    case "jinx":
+                    {
+                        Orb(70f, 150f, target);
+                    }
+                    break;
                 }
             }
         }
