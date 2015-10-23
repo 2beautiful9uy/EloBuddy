@@ -14,7 +14,7 @@ namespace ParanoidOrbwalking
         
         static float lastaa;
         
-        static bool CanAttack { get { return Game.Time * 1000 > lastaa + ObjectManager.Player.AttackDelay * 1000 - 180f; } }
+        static bool CanAttack { get { return Game.Time * 1000 > lastaa + ObjectManager.Player.AttackDelay * 1000 - 150f; } }
         
         public static void Main(string[] args)
         {
