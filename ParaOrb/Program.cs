@@ -25,6 +25,7 @@ namespace ParaOrb
         {
             menu=MainMenu.AddMenu("ParaOrb","paraorb");
             menu.Add("combo",new KeyBind("Combo",false,KeyBind.BindTypes.HoldActive,' '));
+            menu.Add("cancel", new Slider("if you have aa cancel change 0", 0, 0, 30));
             Obj_AI_Base.OnBasicAttack += Obj_AI_Base_OnBasicAttack;
             Game.OnTick += Game_OnTick;
         }
@@ -110,7 +111,7 @@ namespace ParaOrb
                         break;
                         case false:
                         {
-                            if (Game.Time * 1000 > lastaa + ObjectManager.Player.AttackCastDelay * 1000 - move)
+                            if (Game.Time * 1000 > lastaa + ObjectManager.Player.AttackCastDelay * 1000 - move + menu["cancel"].Cast<Slider>().CurrentValue)
                             {
                                 Player.IssueOrder(GameObjectOrder.MoveTo, Game.CursorPos);
                             }
