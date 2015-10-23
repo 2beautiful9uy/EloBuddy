@@ -6,7 +6,7 @@ using EloBuddy.SDK.Events;
 using EloBuddy.SDK.Menu;
 using EloBuddy.SDK.Menu.Values;
 
-namespace ParanoidOrbwalking
+namespace ParaOrb
 {
     class Program
     {
