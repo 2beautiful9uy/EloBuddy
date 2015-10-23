@@ -43,9 +43,23 @@ namespace ParanoidOrbwalking
                 switch (ObjectManager.Player.ChampionName.ToLower())
                 {
                     case "kalista":
-                        Player.IssueOrder(GameObjectOrder.MoveTo, Game.CursorPos);
-                        if (CanAttack && target.IsValidTarget() && !target.IsZombie)
-                            Player.IssueOrder(GameObjectOrder.AttackUnit, target);
+                        switch (target.IsValidTarget() && !target.IsZombie)
+                        {
+                            case true:
+                                switch (Game.Time * 1000 > lastaa + ObjectManager.Player.AttackDelay * 1000 - 150f)
+                                {
+                                    case true:
+                                        Player.IssueOrder(GameObjectOrder.AttackUnit, target);
+                                    break;
+                                    case false:
+                                        Player.IssueOrder(GameObjectOrder.MoveTo, Game.CursorPos);
+                                    break;
+                                }
+                            break;
+                            case false:
+                                Player.IssueOrder(GameObjectOrder.MoveTo, Game.CursorPos);
+                            break;
+                        }
                     break;
                     case "ezreal":
                         Orb(100f, 150f, target);
