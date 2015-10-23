@@ -14,7 +14,11 @@ namespace ParaOrb
         
         static float lastaa;
         
+        static bool included;
+        
         static bool CanAttack { get { return Game.Time * 1000 > lastaa + ObjectManager.Player.AttackDelay * 1000 - 150f; } }
+        
+        static string Name { get { return ObjectManager.Player.ChampionName.ToLower(); } }
         
         public static void Main(string[] args)
         {
@@ -23,6 +27,16 @@ namespace ParaOrb
         
         static void Loading_OnLoadingComplete(EventArgs args)
         {
+            if (Name != "jinx" || Name != "vayne" || Name != "ezreal" || Name != "kalista")
+            {
+                included = false;
+                Chat.Print(ObjectManager.Player.ChampionName+" Loaded. No perfect calculations for: "+ObjectManager.Player.ChampionName);
+            }
+            else
+            {
+                included = true;
+                Chat.Print(ObjectManager.Player.ChampionName+" Loaded");
+            }
             menu=MainMenu.AddMenu("ParaOrb","paraorb");
             menu.Add("combo",new KeyBind("Combo",false,KeyBind.BindTypes.HoldActive,' '));
             menu.Add("cancel", new Slider("if you have aa cancel change 0", 0, 0, 30));
@@ -79,30 +93,34 @@ namespace ParaOrb
                     break;
                     case "ezreal":
                     {
-                        Orb(100f, 150f, target);
+                        Orb(100f, target);
                     }
                     break;
                     case "vayne":
                     {
-                        Orb(80f, 150f, target);
+                        Orb(80f, target);
                     }
                     break;
                     case "jinx":
                     {
-                        Orb(70f, 150f, target);
+                        Orb(70f, target);
                     }
                     break;
+                }
+                if (!included || (Name != "jinx" || Name != "vayne" || Name != "ezreal" || Name != "kalista"))
+                {
+                    Orb(40f, target);
                 }
             }
         }
         
-        static void Orb(float move, float attack, AIHeroClient unit)
+        static void Orb(float move, AIHeroClient unit)
         {
             switch (unit.IsValidTarget() && !unit.IsZombie)
             {
                 case true:
                 {
-                    switch (Game.Time * 1000 > lastaa + ObjectManager.Player.AttackDelay * 1000 - attack)
+                    switch (Game.Time * 1000 > lastaa + ObjectManager.Player.AttackDelay * 1000 - 150f)
                     {
                         case true:
                         {
@@ -111,7 +129,7 @@ namespace ParaOrb
                         break;
                         case false:
                         {
-                            if (Game.Time * 1000 > lastaa + ObjectManager.Player.AttackCastDelay * 1000 - move + (float)(menu["cancel"].Cast<Slider>().CurrentValue))
+                        	if (Game.Time * 1000 > lastaa + ObjectManager.Player.AttackCastDelay * 1000 - move + (float)(menu["cancel"].Cast<Slider>().CurrentValue))
                             {
                                 Player.IssueOrder(GameObjectOrder.MoveTo, Game.CursorPos);
                             }
