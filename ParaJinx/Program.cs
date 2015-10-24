@@ -43,7 +43,7 @@ namespace ParaJinx
         
         static bool CanNotMove(AIHeroClient target)
         {
-            return (!target.HasBuff("rocketgrab2") && (target.HasBuff("teleport_target") || target.HasBuff("Pantheon_GrandSkyfall_Jump") || target.HasBuffOfType(BuffType.Stun) || target.HasBuffOfType(BuffType.Snare) || target.HasBuffOfType(BuffType.Knockup) || target.HasBuffOfType(BuffType.Charm) || target.HasBuffOfType(BuffType.Fear) || target.HasBuffOfType(BuffType.Knockback) || target.HasBuffOfType(BuffType.Taunt) || target.HasBuffOfType(BuffType.Suppression) || target.IsStunned));
+            return (target.HasBuff("teleport_target") || target.HasBuff("Pantheon_GrandSkyfall_Jump") || target.HasBuffOfType(BuffType.Stun) || target.HasBuffOfType(BuffType.Snare) || target.HasBuffOfType(BuffType.Knockup) || target.HasBuffOfType(BuffType.Charm) || target.HasBuffOfType(BuffType.Fear) || target.HasBuffOfType(BuffType.Knockback) || target.HasBuffOfType(BuffType.Taunt) || target.HasBuffOfType(BuffType.Suppression) || target.IsStunned);
         }
         
         public static void Main(string[] args)
@@ -63,17 +63,16 @@ namespace ParaJinx
                 Chat.Print("<font color=\"#00BFFF\">Para </font>Jinx<font color=\"#000000\"> by Paranoid </font> - <font color=\"#FFFFFF\">Loaded</font>");
             }
         }
-
+        
         static void Obj_AI_Base_OnProcessSpellCast(Obj_AI_Base sender, GameObjectProcessSpellCastEventArgs args)
         {
-            if (!E.IsReady() || sender.IsMe || !sender.IsEnemy || !sender.IsValidTarget(E.Range))
+            if (E.IsReady() && sender.IsEnemy && sender.IsValidTarget(E.Range))
             {
-                return;
-            }
-            var s = args.SData.Name.ToLower();
-            if (s=="katarinar"||s=="drain"||s=="consume"||s=="absolutezero"||s=="volibearqattack"||s=="staticfield"||s=="reapthewhirlwind"||s=="jinxw"||s=="jinxr"||s=="shenstandunited"||s=="threshe"||s=="threshrpenta"||s=="threshq"||s=="meditate"||s=="caitlynpiltoverpeacemaker"||s=="cassiopeiapetrifyinggaze"||s=="ezrealtrueshotbarrage"||s=="galioidolofdurand"||s=="luxmalicecannon"||s=="missfortunebullettime"||s=="infiniteduress"||s=="alzaharnethergrasp"||s=="lucianq"||s=="velkozr"||s=="rocketgrabmissile")
-            {
-                E.Cast(sender.Position);
+                var s = args.SData.Name.ToLower();
+                if (s=="katarinar"||s=="drain"||s=="consume"||s=="absolutezero"||s=="volibearqattack"||s=="staticfield"||s=="reapthewhirlwind"||s=="jinxw"||s=="jinxr"||s=="shenstandunited"||s=="threshe"||s=="threshrpenta"||s=="threshq"||s=="meditate"||s=="caitlynpiltoverpeacemaker"||s=="cassiopeiapetrifyinggaze"||s=="ezrealtrueshotbarrage"||s=="galioidolofdurand"||s=="luxmalicecannon"||s=="missfortunebullettime"||s=="infiniteduress"||s=="alzaharnethergrasp"||s=="velkozr")
+                {
+                    E.Cast(sender.Position);
+                }
             }
         }
 		
@@ -216,7 +215,7 @@ namespace ParaJinx
         }
         static void ECast()
         {
-            for (i = EntityManager.Heroes.Enemies.Where(x => x.Distance(ObjectManager.Player) < E.Range).GetEnumerator(); i.MoveNext();)
+            for (i = EntityManager.Heroes.Enemies.Where(x => x.Distance(ObjectManager.Player) < E.Range && !x.HasBuff("rocketgrab2") && !x.HasBuff("RocketGrab")).GetEnumerator(); i.MoveNext();)
             {
                 var enemy = i.Current;
                 if (enemy.IsValidTarget() && CanNotMove(enemy))
