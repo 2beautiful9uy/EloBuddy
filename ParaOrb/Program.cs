@@ -27,7 +27,7 @@ namespace ParaOrb
         {
             menu=MainMenu.AddMenu("ParaOrb","paraorb");
             menu.Add("combo",new KeyBind("Combo",false,KeyBind.BindTypes.HoldActive,' '));
-            menu.Add("cancel", new Slider("if you have aa cancel change 0", 0, 0, 50));
+            menu.Add("cancel", new Slider("If you have aa cancel change slider to 10 or higher [ i have 0 and works perfect TESTED]", 0, 0, 50));
             Obj_AI_Base.OnBasicAttack += Obj_AI_Base_OnBasicAttack;
             Game.OnTick += Game_OnTick;
             if (Name == "jinx" || Name == "vayne" || Name == "ezreal" || Name == "kalista")
