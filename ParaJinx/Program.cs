@@ -15,7 +15,7 @@ namespace ParaJinx
         
         static readonly Spell.Active Q = new Spell.Active(SpellSlot.Q, 1500);
         
-        static readonly Spell.Skillshot W = new Spell.Skillshot(SpellSlot.W, 1500, SkillShotType.Linear, 600, 3300, 60)
+        static readonly Spell.Skillshot W = new Spell.Skillshot(SpellSlot.W, 1500, SkillShotType.Linear, 600, 3300, 100)
         {
             AllowedCollisionCount = 0, MinimumHitChance = HitChance.High
         };
@@ -23,6 +23,9 @@ namespace ParaJinx
         static float lastaa;
         
         static bool CanAttack { get { return Game.Time * 1000 > lastaa + ObjectManager.Player.AttackDelay * 1000 - 150f; } }
+        
+        static bool CanMove { get { return Game.Time * 1000 > lastaa + ObjectManager.Player.AttackCastDelay * 1000; } }
+
         
         public static void Main(string[] args)
         {
@@ -55,25 +58,22 @@ namespace ParaJinx
                 {
                     case true:
                     {
-                        if (!CanAttack)
+                        if (Q.IsReady())
                         {
-                            if (Q.IsReady())
+                            if (unit.Distance(ObjectManager.Player)<=600f && ObjectManager.Player.AttackRange>550f && !CanAttack && CanMove)
                             {
-                                if (unit.Distance(ObjectManager.Player)<=650f && ObjectManager.Player.AttackRange>550f)
-                                {
-                                    Core.DelayAction(Qcast, (int)(ObjectManager.Player.AttackCastDelay * 1000)-60);
-                                }
-                                else if (unit.Distance(ObjectManager.Player)>650f && ((ushort)ObjectManager.Player.AttackRange == 524 || (ushort)ObjectManager.Player.AttackRange == 525 || (ushort)ObjectManager.Player.AttackRange == 526))
-                                {
-                                    Core.DelayAction(Qcast, (int)(ObjectManager.Player.AttackCastDelay * 1000)-60);
-                                }
+                                Q.Cast();
                             }
-                            if (W.IsReady())
+                            else if (unit.Distance(ObjectManager.Player)>600f && ((ushort)ObjectManager.Player.AttackRange == 524 || (ushort)ObjectManager.Player.AttackRange == 525 || (ushort)ObjectManager.Player.AttackRange == 526) && CanMove && !CanAttack)
                             {
-                                if (unit.Distance(ObjectManager.Player)>200f)
-                                {
-                                    Core.DelayAction(Wcast, (int)(ObjectManager.Player.AttackCastDelay * 1000)-60);
-                                }
+                                Q.Cast();
+                            }
+                        }
+                        if (W.IsReady())
+                        {
+                            if (unit.Distance(ObjectManager.Player)>200f && CanMove && !CanAttack)
+                            {
+                                W.Cast(unit);
                             }
                         }
                     }
@@ -116,20 +116,6 @@ namespace ParaJinx
                     }
                     break;
                 }
-            }
-        }
-        
-        static void Qcast()
-        {
-            Q.Cast();
-        }
-        
-        static void Wcast()
-        {
-            var unit = TargetSelector.GetTarget(ObjectManager.Player.AttackRange + 120f,DamageType.Physical);
-            if (unit.IsValidTarget() && !unit.IsZombie && unit.Distance(ObjectManager.Player)>200f)
-            {
-                W.Cast(unit);
             }
         }
     }
