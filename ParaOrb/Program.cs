@@ -89,12 +89,12 @@ namespace ParaOrb
                     break;
                     case "ezreal":
                     {
-                        Orb(100f, target);
+                        Orb(90f, target);
                     }
                     break;
                     case "vayne":
                     {
-                        Orb(80f, target);
+                        Orb(70f, target);
                     }
                     break;
                 	case "jinx":
