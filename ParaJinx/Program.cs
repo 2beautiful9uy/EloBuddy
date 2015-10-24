@@ -43,7 +43,7 @@ namespace ParaJinx
         
         static bool CanNotMove(AIHeroClient target)
         {
-            return (target.HasBuff("teleport_target") || target.HasBuff("Pantheon_GrandSkyfall_Jump") || target.HasBuffOfType(BuffType.Stun) || target.HasBuffOfType(BuffType.Snare) || target.HasBuffOfType(BuffType.Knockup) || target.HasBuffOfType(BuffType.Charm) || target.HasBuffOfType(BuffType.Fear) || target.HasBuffOfType(BuffType.Knockback) || target.HasBuffOfType(BuffType.Taunt) || target.HasBuffOfType(BuffType.Suppression) || target.IsStunned);
+            return (!target.HasBuff("rocketgrab2") && (target.HasBuff("teleport_target") || target.HasBuff("Pantheon_GrandSkyfall_Jump") || target.HasBuffOfType(BuffType.Stun) || target.HasBuffOfType(BuffType.Snare) || target.HasBuffOfType(BuffType.Knockup) || target.HasBuffOfType(BuffType.Charm) || target.HasBuffOfType(BuffType.Fear) || target.HasBuffOfType(BuffType.Knockback) || target.HasBuffOfType(BuffType.Taunt) || target.HasBuffOfType(BuffType.Suppression) || target.IsStunned));
         }
         
         public static void Main(string[] args)
