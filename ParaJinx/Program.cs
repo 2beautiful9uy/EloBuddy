@@ -57,7 +57,6 @@ namespace ParaJinx
             {
                 menu=MainMenu.AddMenu("ParaJinx","parajinx");
                 menu.Add("combo",new KeyBind("Combo",false,KeyBind.BindTypes.HoldActive,' '));
-                Gapcloser.OnGapcloser += Gapcloser_OnGapcloser;
                 Obj_AI_Base.OnBasicAttack += Obj_AI_Base_OnBasicAttack;
                 Game.OnTick += Spells;
                 Obj_AI_Base.OnProcessSpellCast += Obj_AI_Base_OnProcessSpellCast;
@@ -67,7 +66,7 @@ namespace ParaJinx
 
         static void Obj_AI_Base_OnProcessSpellCast(Obj_AI_Base sender, GameObjectProcessSpellCastEventArgs args)
         {
-            if (!E.IsReady() || !sender.IsEnemy || !sender.IsValidTarget(E.Range))
+            if (!E.IsReady() || sender.IsMe || !sender.IsEnemy || !sender.IsValidTarget(E.Range))
             {
                 return;
             }
@@ -75,18 +74,6 @@ namespace ParaJinx
             if (s=="katarinar"||s=="drain"||s=="consume"||s=="absolutezero"||s=="volibearqattack"||s=="staticfield"||s=="reapthewhirlwind"||s=="jinxw"||s=="jinxr"||s=="shenstandunited"||s=="threshe"||s=="threshrpenta"||s=="threshq"||s=="meditate"||s=="caitlynpiltoverpeacemaker"||s=="cassiopeiapetrifyinggaze"||s=="ezrealtrueshotbarrage"||s=="galioidolofdurand"||s=="luxmalicecannon"||s=="missfortunebullettime"||s=="infiniteduress"||s=="alzaharnethergrasp"||s=="lucianq"||s=="velkozr"||s=="rocketgrabmissile")
             {
                 E.Cast(sender.Position);
-            }
-        }
-        
-        static void Gapcloser_OnGapcloser(AIHeroClient sender, Gapcloser.GapcloserEventArgs e)
-        {			
-            if (E.IsReady() && sender.IsEnemy)
-            {
-                var t = sender;
-                if (t.IsValidTarget(E.Range))
-                {
-                    E.Cast(ObjectManager.Player);
-                }
             }
         }
 		

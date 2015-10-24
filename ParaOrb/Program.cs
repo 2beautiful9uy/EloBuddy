@@ -52,7 +52,7 @@ namespace ParaOrb
         {
             if(menu["combo"].Cast<KeyBind>().CurrentValue)
             {
-                var target = TargetSelector.GetTarget(ObjectManager.Player.AttackRange + 200f,DamageType.Physical);
+                var target = TargetSelector.GetTarget(ObjectManager.Player.AttackRange + 170f,DamageType.Physical);
                 switch (ObjectManager.Player.ChampionName.ToLower())
                 {
                     case "kalista":
