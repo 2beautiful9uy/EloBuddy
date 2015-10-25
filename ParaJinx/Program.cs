@@ -92,6 +92,8 @@ namespace ParaJinx
                 wm = menu.AddSubMenu("W Config", "wconfig");
                     wm.Add("wcombo", new CheckBox("W combo"));
                     wm.AddSeparator();
+                    wm.Add("wks", new CheckBox("W KS"));
+                    wm.AddSeparator();
                     wm.Add("wrange", new Slider("Minimum range to use W", 300, 0, 1500));
                     wm.AddSeparator();
                     wm.AddGroupLabel("W On:");
@@ -107,6 +109,8 @@ namespace ParaJinx
         }
         
         static bool wcombo { get { return wm["wcombo"].Cast<CheckBox>().CurrentValue; } }
+        
+        static bool wks { get { return wm["wks"].Cast<CheckBox>().CurrentValue; } }
         
         static float wrange { get { return wm["wrange"].Cast<Slider>().CurrentValue; } }
         
@@ -220,16 +224,23 @@ namespace ParaJinx
         
         static void Wlogic()
         {
-            for (n = EntityManager.Heroes.Enemies.Where(x => x.Distance(ObjectManager.Player) < 1500f && wm[x.ChampionName].Cast<CheckBox>().CurrentValue && !x.IsZombie).GetEnumerator(); n.MoveNext();)
+            for (n = EntityManager.Heroes.Enemies.Where(x => x.Distance(ObjectManager.Player) < 1500f && !x.IsZombie).GetEnumerator(); n.MoveNext();)
             {
-                var enemy = n.Current;
-                if (enemy.IsValidTarget(ObjectManager.Player.AttackRange + 100f) && enemy.Distance(ObjectManager.Player) > wrange && !CanAttack && AttackIsDone)
+                var target = n.Current;
+                if (wks && target.Health < GetKsDamageW(target))
                 {
-                    Wcast(enemy);
+                	Wcast(target);
                 }
-                else if (enemy.IsValidTarget(1500f) && enemy.Distance(ObjectManager.Player) > wrange)
+                else if (wm[target.ChampionName].Cast<CheckBox>().CurrentValue)
                 {
-                    Wcast(enemy);
+	                if (target.IsValidTarget(ObjectManager.Player.AttackRange + 100f) && target.Distance(ObjectManager.Player) > wrange && !CanAttack && AttackIsDone)
+	                {
+	                    Wcast(target);
+	                }
+	                else if (target.IsValidTarget(1500f) && target.Distance(ObjectManager.Player) > wrange)
+	                {
+	                    Wcast(target);
+	                }
                 }
             }
         }
@@ -294,6 +305,38 @@ namespace ParaJinx
                 }
                 break;
             }
+        }
+        
+        static float Wdamage(AIHeroClient unit)
+        {
+            var W = new Spell.Skillshot(SpellSlot.W, 1500, SkillShotType.Linear, 600, 3300, 90);
+            return ObjectManager.Player.CalculateDamageOnUnit(unit, DamageType.Physical, (float)(new [] {10, 60, 110, 160, 210}[W.Level - 1] + 1.4*(ObjectManager.Player.TotalAttackDamage)));
+        }
+        
+        static float GetKsDamageW(AIHeroClient unit)
+        {
+            var wdmg = Wdamage(unit);
+            if (ObjectManager.Player.HasBuff("summonerexhaust"))
+            {
+                wdmg = wdmg * 0.6f;
+            }
+            if (ObjectManager.Player.HasBuff("ferocioushowl"))
+            {
+                wdmg = wdmg * 0.7f;
+            }
+
+            if (unit == EntityManager.Heroes.Enemies.FirstOrDefault(x=>x.ChampionName == "Blitzcrank"))
+            {
+                if (!unit.HasBuff("BlitzcrankManaBarrierCD") && !unit.HasBuff("ManaBarrier"))
+                {
+                    wdmg -= unit.Mana / 2f;
+                }
+            }
+
+            wdmg -= unit.HPRegenRate;
+            wdmg -= unit.PercentLifeStealMod * 0.005f * unit.FlatPhysicalDamageMod;
+
+            return wdmg;
         }
     }
 }
