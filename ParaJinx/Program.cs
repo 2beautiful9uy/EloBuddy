@@ -14,10 +14,14 @@ namespace ParaJinx
         static Menu menu;
         
         static System.Collections.Generic.IEnumerator<AIHeroClient> i;
-        
-        static bool Blitz { get { return EntityManager.Heroes.Allies.FirstOrDefault(x=>x.ChampionName == "Blitzcrank") == null; } }
+
+        static System.Collections.Generic.IEnumerator<AIHeroClient> j;
+
+        static System.Collections.Generic.IEnumerator<AIHeroClient> k;
+
+        static System.Collections.Generic.IEnumerator<AIHeroClient> l;
 		
-        static bool BlitzGrab { get { return EntityManager.Heroes.Enemies.FirstOrDefault(x => x.IsValidTarget(2000) && x.HasBuff("RocketGrab")) == null; } }
+        static bool Blitz { get { return EntityManager.Heroes.Allies.FirstOrDefault(x=>x.ChampionName == "Blitzcrank") == null; } }
         
         static readonly Spell.Active Q = new Spell.Active(SpellSlot.Q, 1500);
         
@@ -30,8 +34,10 @@ namespace ParaJinx
         {
             AllowedCollisionCount = 100, MinimumHitChance = HitChance.Low
         };
-            
-        static float lastaa;
+        
+        static bool BlitzGrabOnTarget;
+        
+        static float lastaa, blitzgrab;
         
         static bool CanAttack { get { return Game.Time * 1000 > lastaa + ObjectManager.Player.AttackDelay * 1000 - 150f; } }
         
@@ -39,18 +45,42 @@ namespace ParaJinx
         
         static bool TargetsQ(AIHeroClient unit) { return EntityManager.Heroes.Enemies.Count(x=>x.IsValidTarget(1500f) && x.Distance(unit) < 250f && !x.IsZombie) >= 2; }
         
-        static bool NormalRange { get { return ((ushort)ObjectManager.Player.AttackRange == 524 || (ushort)ObjectManager.Player.AttackRange == 525 || (ushort)ObjectManager.Player.AttackRange == 526); } }
+        static bool NormalRange { get { return ((ushort)ObjectManager.Player.AttackRange == 524 || (ushort)ObjectManager.Player.AttackRange == 525
+        	                                        || (ushort)ObjectManager.Player.AttackRange == 526); } }
         
         static bool CanNotMove(AIHeroClient target)
         {
-            return (target.HasBuff("teleport_target") || target.HasBuff("Pantheon_GrandSkyfall_Jump") || target.HasBuffOfType(BuffType.Stun) || target.HasBuffOfType(BuffType.Snare) || target.HasBuffOfType(BuffType.Knockup) || target.HasBuffOfType(BuffType.Charm) || target.HasBuffOfType(BuffType.Fear) || target.HasBuffOfType(BuffType.Knockback) || target.HasBuffOfType(BuffType.Taunt) || target.HasBuffOfType(BuffType.Suppression) || target.IsStunned);
+            return (target.HasBuffOfType(BuffType.Stun) || target.HasBuffOfType(BuffType.Snare) || target.HasBuffOfType(BuffType.Knockup)
+        	        || target.HasBuffOfType(BuffType.Charm) || target.HasBuffOfType(BuffType.Fear) || target.HasBuffOfType(BuffType.Knockback)
+        	        || target.HasBuffOfType(BuffType.Taunt) || target.HasBuffOfType(BuffType.Suppression) || target.IsStunned);
         }
         
         public static void Main(string[] args)
         {
             Loading.OnLoadingComplete += Loading_OnLoadingComplete;
         }
-        
+
+        static void Obj_AI_Base_OnSpellCast(Obj_AI_Base sender, GameObjectProcessSpellCastEventArgs args)
+        {
+            if (!Blitz)
+            {
+                var blitzcrank = EntityManager.Heroes.Allies.FirstOrDefault(x=>x.ChampionName == "Blitzcrank");
+                if (sender==blitzcrank && (args.SData.Name=="RocketGrab"||args.SData.Name=="RocketGrabMissile"))
+                {
+                    blitzgrab = Game.Time * 1000;
+                }
+            }
+        }
+
+        static void Obj_AI_Base_OnBuffGain(Obj_AI_Base sender, Obj_AI_BaseBuffGainEventArgs args)
+        {
+            for (l = EntityManager.Heroes.Enemies.Where(x => x.IsValidTarget(1200f)).GetEnumerator(); l.MoveNext();)
+            {
+                var enemy = l.Current;
+                BlitzGrabOnTarget |= enemy == sender && (args.Buff.Name == "Stun" || args.Buff.Name == "rocketgrab2");
+            }
+        }
+
         static void Loading_OnLoadingComplete(EventArgs args)
         {
             if (ObjectManager.Player.ChampionName.ToLower() == "jinx")
@@ -59,6 +89,8 @@ namespace ParaJinx
                 menu.Add("combo",new KeyBind("Combo",false,KeyBind.BindTypes.HoldActive,' '));
                 Obj_AI_Base.OnBasicAttack += Obj_AI_Base_OnBasicAttack;
                 Game.OnTick += Spells;
+                Obj_AI_Base.OnBuffGain += Obj_AI_Base_OnBuffGain;
+                Obj_AI_Base.OnSpellCast += Obj_AI_Base_OnSpellCast;
                 Obj_AI_Base.OnProcessSpellCast += Obj_AI_Base_OnProcessSpellCast;
                 Chat.Print("<font color=\"#00BFFF\">Para </font>Jinx<font color=\"#000000\"> by Paranoid </font> - <font color=\"#FFFFFF\">Loaded</font>");
             }
@@ -66,12 +98,20 @@ namespace ParaJinx
         
         static void Obj_AI_Base_OnProcessSpellCast(Obj_AI_Base sender, GameObjectProcessSpellCastEventArgs args)
         {
-            if (E.IsReady() && sender.IsEnemy && sender.IsValidTarget(E.Range))
+            if (E.IsReady())
             {
-                var s = args.SData.Name.ToLower();
-                if (s=="katarinar"||s=="drain"||s=="consume"||s=="absolutezero"||s=="volibearqattack"||s=="staticfield"||s=="reapthewhirlwind"||s=="jinxw"||s=="jinxr"||s=="shenstandunited"||s=="threshe"||s=="threshrpenta"||s=="threshq"||s=="meditate"||s=="caitlynpiltoverpeacemaker"||s=="cassiopeiapetrifyinggaze"||s=="ezrealtrueshotbarrage"||s=="galioidolofdurand"||s=="luxmalicecannon"||s=="missfortunebullettime"||s=="infiniteduress"||s=="alzaharnethergrasp"||s=="velkozr")
+                for (k = EntityManager.Heroes.Enemies.Where(x => x.IsValidTarget(600f)).GetEnumerator(); k.MoveNext();)
                 {
-                    E.Cast(sender.Position);
+                    var enemy = k.Current;
+                    var s = args.SData.Name.ToLower();
+                    if (enemy == sender && (s == "katarinar" || s == "drain" || s == "consume" || s == "absolutezero" || s == "volibearqattack" || s == "staticfield"
+                                            || s == "reapthewhirlwind" || s == "jinxw" || s == "jinxr" || s == "shenstandunited" || s == "threshe" || s == "threshrpenta"
+                                            || s == "threshq" || s == "meditate" || s == "caitlynpiltoverpeacemaker" || s == "cassiopeiapetrifyinggaze"
+                                            || s == "ezrealtrueshotbarrage" || s == "galioidolofdurand" || s == "luxmalicecannon" || s == "missfortunebullettime"
+                                            || s == "infiniteduress" || s == "alzaharnethergrasp" || s == "velkozr"))
+                    {
+                        E.Cast(enemy.Position);
+                    }
                 }
             }
         }
@@ -83,6 +123,10 @@ namespace ParaJinx
 
         static void Spells(EventArgs args)
         {
+            if (BlitzGrabOnTarget && Game.Time * 1000 > blitzgrab + 1000f)
+            {
+                BlitzGrabOnTarget = false;
+            }
             if (E.IsReady())
             {
                 Elogic();
@@ -124,7 +168,7 @@ namespace ParaJinx
                         {
                             if (unit.Distance(ObjectManager.Player)>200f && !CanAttack && AttackIsDone)
                             {
-                            	W.AllowedCollisionCount=0;
+                                W.AllowedCollisionCount=0;
                                 W.Cast(unit);
                             }
                         }
@@ -148,7 +192,7 @@ namespace ParaJinx
                                 {
                                     if (unit2.Distance(ObjectManager.Player)>200f)
                                     {
-                                    	W.AllowedCollisionCount=0;
+                                        W.AllowedCollisionCount=0;
                                         W.Cast(unit2);
                                     }
                                 }
@@ -179,53 +223,43 @@ namespace ParaJinx
                 case false:
                 {
                     var blitzcrank = EntityManager.Heroes.Allies.FirstOrDefault(x=>x.ChampionName == "Blitzcrank");
-                    switch (blitzcrank.Distance(ObjectManager.Player) < E.Range)
+                    if (BlitzGrabOnTarget && blitzcrank.Distance(ObjectManager.Player)<2500f)
                     {
-                        case true:
+                        E.Cast(blitzcrank.Position);
+                    }
+                    else if (Game.Time * 1000 > blitzgrab + 1000f)
+                    {
+                        for (i = EntityManager.Heroes.Enemies.Where(x => x.Distance(ObjectManager.Player) < E.Range).GetEnumerator(); i.MoveNext();)
                         {
-                            switch (BlitzGrab)
+                            var enemy = i.Current;
+                            if (enemy.HasBuff("teleport_target") || enemy.HasBuff("Pantheon_GrandSkyfall_Jump"))
                             {
-                                case false:
-                                {
-                                    E.Cast(blitzcrank.Position);
-                                }
-                                break;
-                                case true:
-                                {
-                                    ECast();
-                                }
-                                break;
+                                E.Cast(enemy.Position);
+                            }
+                            else if (enemy.IsValidTarget() && CanNotMove(enemy))
+                            {
+                                E.Cast(enemy.Position);
                             }
                         }
-                        break;
-                        case false:
-                        {
-                            ECast();
-                        }
-                        break;							
                     }
                 }
                 break;
                 case true:
                 {
-                    ECast();
+                    for (j = EntityManager.Heroes.Enemies.Where(x => x.Distance(ObjectManager.Player) < E.Range).GetEnumerator(); j.MoveNext();)
+                    {
+                        var enemy = j.Current;
+                        if (enemy.HasBuff("teleport_target") || enemy.HasBuff("Pantheon_GrandSkyfall_Jump"))
+                        {
+                            E.Cast(enemy.Position);
+                        }
+                        else if (enemy.IsValidTarget() && CanNotMove(enemy))
+                        {
+                            E.Cast(enemy.Position);
+                        }
+                    }
                 }
                 break;
-            }
-        }
-        static void ECast()
-        {
-            for (i = EntityManager.Heroes.Enemies.Where(x => x.Distance(ObjectManager.Player) < E.Range && !x.HasBuff("rocketgrab2") && !x.HasBuff("RocketGrab")).GetEnumerator(); i.MoveNext();)
-            {
-                var enemy = i.Current;
-                if (enemy.IsValidTarget() && CanNotMove(enemy))
-                {
-                    E.Cast(enemy.Position);
-                }
-                if (enemy.HasBuff("teleport_target") || enemy.HasBuff("Pantheon_GrandSkyfall_Jump"))
-                {
-                    E.Cast(enemy.Position);
-                }
             }
         }
     }
