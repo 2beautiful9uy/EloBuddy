@@ -152,10 +152,6 @@ namespace ParaJinx
             var unit = TargetSelector.GetTarget(ObjectManager.Player.AttackRange + 120f,DamageType.Physical);
             if(menu["combo"].Cast<KeyBind>().CurrentValue)
             {
-                if (wcombo)
-                {
-                    Wlogic();
-                }
                 switch (unit.IsValidTarget() && !unit.IsZombie)
                 {
                     case true:
@@ -219,6 +215,10 @@ namespace ParaJinx
                     }
                     break;
                 }
+                if (wcombo)
+                {
+                    Wlogic();
+                }
             }
         }
         
@@ -227,7 +227,7 @@ namespace ParaJinx
             for (n = EntityManager.Heroes.Enemies.Where(x => x.Distance(ObjectManager.Player) < 1500f && !x.IsZombie).GetEnumerator(); n.MoveNext();)
             {
                 var target = n.Current;
-                if (wks && target.Health < GetKsDamageW(target))
+                if (target.IsValidTarget(1500f) && target.Distance(ObjectManager.Player) > wrange && wks && target.Health < GetKsDamageW(target))
                 {
                 	Wcast(target);
                 }
