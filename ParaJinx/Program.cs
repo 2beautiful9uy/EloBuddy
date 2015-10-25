@@ -12,7 +12,7 @@ namespace ParaJinx
 {
     class Program
     {
-        static Menu menu, wm;
+        static Menu menu, qm, wm;
         
         static IEnumerator<AIHeroClient> i;
 
@@ -41,7 +41,7 @@ namespace ParaJinx
         
         static bool AttackIsDone { get { return Game.Time * 1000 > lastaa + ObjectManager.Player.AttackCastDelay * 1000; } }
         
-        static bool TargetsQ(AIHeroClient unit) { return EntityManager.Heroes.Enemies.Count(x=>x.IsValidTarget(1500f) && x.Distance(unit) < 250f && !x.IsZombie) >= 2; }
+        static bool TargetsQ(AIHeroClient unit) { return EntityManager.Heroes.Enemies.Count(x=>x.IsValidTarget(1500f) && x.Distance(unit) < 250f && !x.IsZombie) >= qtargets; }
         
         static bool NormalRange { get { return ((ushort)ObjectManager.Player.AttackRange == 524 || (ushort)ObjectManager.Player.AttackRange == 525
         	                                        || (ushort)ObjectManager.Player.AttackRange == 526); } }
@@ -89,6 +89,10 @@ namespace ParaJinx
                 menu.AddGroupLabel("Para Jinx");
                 menu.AddSeparator();
                 menu.AddLabel("made by Paranoid");
+                qm = menu.AddSubMenu("Q Config", "qconfig");
+                    qm.Add("qcombo", new CheckBox("Q Combo"));
+                    qm.AddSeparator();
+                    qm.Add("qtargets", new Slider("Q if splash can hit [x] targets", 3, 0, 5));
                 wm = menu.AddSubMenu("W Config", "wconfig");
                     wm.Add("wcombo", new CheckBox("W combo"));
                     wm.AddSeparator();
@@ -112,7 +116,11 @@ namespace ParaJinx
         
         static bool wks { get { return wm["wks"].Cast<CheckBox>().CurrentValue; } }
         
+        static bool qcombo { get { return qm["qcombo"].Cast<CheckBox>().CurrentValue; } }
+        
         static float wrange { get { return wm["wrange"].Cast<Slider>().CurrentValue; } }
+        
+        static int qtargets { get { return qm["qtargets"].Cast<Slider>().CurrentValue; } }
         
         static void Obj_AI_Base_OnProcessSpellCast(Obj_AI_Base sender, GameObjectProcessSpellCastEventArgs args)
         {
@@ -149,76 +157,84 @@ namespace ParaJinx
             {
                 Elogic();
             }
-            var unit = TargetSelector.GetTarget(ObjectManager.Player.AttackRange + 120f,DamageType.Physical);
             if(menu["combo"].Cast<KeyBind>().CurrentValue)
             {
-                switch (unit.IsValidTarget() && !unit.IsZombie)
+                if (qcombo)
                 {
-                    case true:
-                    {
-                        if (Q.IsReady())
-                        {
-                            switch (TargetsQ(unit))
-                            {
-                                case true:
-                                {
-                                    if (NormalRange && !CanAttack && AttackIsDone)
-                                    {
-                                        Q.Cast();
-                                    }
-                                }
-                                break;
-                                case false:
-                                {
-                                    if (unit.Distance(ObjectManager.Player)<=600f && ObjectManager.Player.AttackRange>550f && !CanAttack && AttackIsDone)
-                                    {
-                                        Q.Cast();
-                                    }
-                                    else if (unit.Distance(ObjectManager.Player)>600f && NormalRange && !CanAttack && AttackIsDone)
-                                    {
-                                        Q.Cast();
-                                    }
-                                }
-                                break;
-                            }
-                        }
-                    }
-                    break;
-                    case false:
-                    {
-                        var unit2 = TargetSelector.GetTarget(1500f,DamageType.Physical);
-                        switch (unit2.IsValidTarget() && !unit2.IsZombie)
-                        {
-                            case true:
-                            {
-                                if (Q.IsReady())
-                                {
-                                    if (NormalRange)
-                                    {
-                                        Q.Cast();
-                                    }
-                                }
-                            }
-                            break;
-                            case false:
-                            {
-                                if (Q.IsReady())
-                                {
-                                    if (ObjectManager.Player.AttackRange>550f)
-                                    {
-                                        Q.Cast();
-                                    }
-                                }
-                            }
-                            break;
-                        }
-                    }
-                    break;
+                    Qlogic();
                 }
                 if (wcombo)
                 {
                     Wlogic();
                 }
+            }
+        }
+        
+        static void Qlogic()
+        {
+            var unit = TargetSelector.GetTarget(ObjectManager.Player.AttackRange + 120f,DamageType.Physical);
+            switch (unit.IsValidTarget() && !unit.IsZombie)
+            {
+                case true:
+                {
+                    if (Q.IsReady())
+                    {
+                        switch (TargetsQ(unit))
+                        {
+                            case true:
+                            {
+                                if (NormalRange && !CanAttack && AttackIsDone)
+                                {
+                                    Q.Cast();
+                                }
+                            }
+                            break;
+                            case false:
+                            {
+                                if (unit.Distance(ObjectManager.Player)<=600f && ObjectManager.Player.AttackRange>550f && !CanAttack && AttackIsDone)
+                                {
+                                    Q.Cast();
+                                }
+                                else if (unit.Distance(ObjectManager.Player)>600f && NormalRange && !CanAttack && AttackIsDone)
+                                {
+                                    Q.Cast();
+                                }
+                            }
+                            break;
+                        }
+                    }
+                }
+                break;
+                case false:
+                {
+                    var unit2 = TargetSelector.GetTarget(1500f,DamageType.Physical);
+                    switch (unit2.IsValidTarget() && !unit2.IsZombie)
+                    {
+                        case true:
+                        {
+                            if (Q.IsReady())
+                            {
+                                if (NormalRange)
+                                {
+                                    Q.Cast();
+                                }
+                            }
+                        }
+                        break;
+                        case false:
+                        {
+                            if (Q.IsReady())
+                            {
+                                if (ObjectManager.Player.AttackRange>550f)
+                                {
+                                    Q.Cast();
+                                }
+                            }
+                        }
+                        break;
+                    }
+                }
+                break;
             }
         }
         
@@ -229,18 +245,18 @@ namespace ParaJinx
                 var target = n.Current;
                 if (target.IsValidTarget(1500f) && target.Distance(ObjectManager.Player) > wrange && wks && target.Health < GetKsDamageW(target))
                 {
-                	Wcast(target);
+                    Wcast(target);
                 }
                 else if (wm[target.ChampionName].Cast<CheckBox>().CurrentValue)
                 {
-	                if (target.IsValidTarget(ObjectManager.Player.AttackRange + 100f) && target.Distance(ObjectManager.Player) > wrange && !CanAttack && AttackIsDone)
-	                {
-	                    Wcast(target);
-	                }
-	                else if (target.IsValidTarget(1500f) && target.Distance(ObjectManager.Player) > wrange)
-	                {
-	                    Wcast(target);
-	                }
+                    if (target.IsValidTarget(ObjectManager.Player.AttackRange + 100f) && target.Distance(ObjectManager.Player) > wrange && !CanAttack && AttackIsDone)
+                    {
+                        Wcast(target);
+                    }
+                    else if (target.IsValidTarget(1500f) && target.Distance(ObjectManager.Player) > wrange)
+                    {
+                        Wcast(target);
+                    }
                 }
             }
         }
