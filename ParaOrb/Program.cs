@@ -27,17 +27,10 @@ namespace ParaOrb
         {
             menu=MainMenu.AddMenu("ParaOrb","paraorb");
             menu.Add("combo",new KeyBind("Combo",false,KeyBind.BindTypes.HoldActive,' '));
-            menu.Add("cancel", new Slider("If you have aa cancel change slider to 10 or higher [I have 0 and works perfect TESTED]", 0, 0, 20));
+            menu.Add("cancel", new Slider("If you have aa cancel change slider to 10 or higher [I have 0 and works perfect TESTED]", 0, 0, 50));
             Obj_AI_Base.OnBasicAttack += Obj_AI_Base_OnBasicAttack;
             Game.OnTick += Game_OnTick;
-            if (Name == "jinx" || Name == "vayne" || Name == "ezreal" || Name == "kalista")
-            {
-                Chat.Print(ObjectManager.Player.ChampionName+" Loaded");
-            }
-            else
-            {
-              Chat.Print(ObjectManager.Player.ChampionName+" Loaded. No perfect calculations for: "+ObjectManager.Player.ChampionName);
-            }
+            Chat.Print("<font color=\"#00BFFF\">Para </font>Orb<font color=\"#000000\"> by Paranoid </font> - <font color=\"#FFFFFF\">Loaded</font>");
         }
         
         static void Obj_AI_Base_OnBasicAttack(Obj_AI_Base sender, GameObjectProcessSpellCastEventArgs args)
@@ -52,7 +45,7 @@ namespace ParaOrb
         {
             if(menu["combo"].Cast<KeyBind>().CurrentValue)
             {
-                var target = TargetSelector.GetTarget(ObjectManager.Player.AttackRange + 170f,DamageType.Physical);
+                var target = TargetSelector.GetTarget(ObjectManager.Player.AttackRange + 160f,DamageType.Physical);
                 switch (ObjectManager.Player.ChampionName.ToLower())
                 {
                     case "kalista":
@@ -97,9 +90,73 @@ namespace ParaOrb
                         Orb(65f, target);
                     }
                     break;
-                	case "jinx":
+                    case "jinx":
                     {
-                        Orb(60f, target);
+                        var Q = new Spell.Active(SpellSlot.Q);
+                        var qt = TargetSelector.GetTarget(655f + 50f + 25f * Q.Level, DamageType.Physical);
+                        var nt = TargetSelector.GetTarget(655f, DamageType.Physical);
+                        if (ObjectManager.Player.AttackRange>550f)
+                        {
+                            switch (qt.IsValidTarget() && !qt.IsZombie)
+                            {
+                                case true:
+                                {
+                                    switch (Game.Time * 1000 > lastaa + ObjectManager.Player.AttackDelay * 1000 - 150f)
+                                    {
+                                        case true:
+                                        {
+                                            Player.IssueOrder(GameObjectOrder.AttackUnit, qt);
+                                        }
+                                        break;
+                                        case false:
+                                        {
+                                            if (Game.Time * 1000 > lastaa + ObjectManager.Player.AttackCastDelay * 1000 - 60f + (float)(menu["cancel"].Cast<Slider>().CurrentValue))
+                                              {
+                                                  Player.IssueOrder(GameObjectOrder.MoveTo, Game.CursorPos);
+                                              }
+                                        }
+                                        break;
+                                    }
+                                }
+                                break;
+                                case false:
+                                {
+                                  Player.IssueOrder(GameObjectOrder.MoveTo, Game.CursorPos);
+                                }
+                                break;
+                            }
+                        }
+                        else if ((ushort)ObjectManager.Player.AttackRange == 524 || (ushort)ObjectManager.Player.AttackRange == 525 || (ushort)ObjectManager.Player.AttackRange == 526)
+                        {
+                            switch (nt.IsValidTarget() && !nt.IsZombie)
+                            {
+                                case true:
+                                {
+                                    switch (Game.Time * 1000 > lastaa + ObjectManager.Player.AttackDelay * 1000 - 150f)
+                                    {
+                                        case true:
+                                        {
+                                            Player.IssueOrder(GameObjectOrder.AttackUnit, nt);
+                                        }
+                                        break;
+                                        case false:
+                                        {
+                                            if (Game.Time * 1000 > lastaa + ObjectManager.Player.AttackCastDelay * 1000 - 60f + (float)(menu["cancel"].Cast<Slider>().CurrentValue))
+                                              {
+                                                  Player.IssueOrder(GameObjectOrder.MoveTo, Game.CursorPos);
+                                              }
+                                        }
+                                        break;
+                                    }
+                                }
+                                break;
+                                case false:
+                                {
+                                    Player.IssueOrder(GameObjectOrder.MoveTo, Game.CursorPos);
+                                }
+                                break;
+                            }
+                        }
                     }
                     break;
                 }
