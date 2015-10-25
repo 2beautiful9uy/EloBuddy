@@ -72,7 +72,7 @@ namespace ParaJinx
 
         static void Obj_AI_Base_OnBuffGain(Obj_AI_Base sender, Obj_AI_BaseBuffGainEventArgs args)
         {
-            for (l = EntityManager.Heroes.Enemies.Where(x => x.IsValidTarget(1200f)).GetEnumerator(); l.MoveNext();)
+            for (l = EntityManager.Heroes.Enemies.Where(x => x.IsValidTarget(2500f)).GetEnumerator(); l.MoveNext();)
             {
                 var enemy = l.Current;
                 BlitzGrabOnTarget |= enemy == sender && (args.Buff.Name == "Stun" || args.Buff.Name == "rocketgrab2");
@@ -98,6 +98,8 @@ namespace ParaJinx
                     wm.AddSeparator();
                     wm.Add("wks", new CheckBox("W KS"));
                     wm.AddSeparator();
+                    wm.Add("waa", new Slider("Don't use W if can hit target in [x] auto attacks", 2, 2, 6));
+                   	wm.AddSeparator();
                     wm.Add("wrange", new Slider("Minimum range to use W", 600, 300, 900));
                     wm.AddSeparator();
                     wm.AddGroupLabel("W On:");
@@ -121,6 +123,13 @@ namespace ParaJinx
         static float wrange { get { return wm["wrange"].Cast<Slider>().CurrentValue; } }
         
         static int qtargets { get { return qm["qtargets"].Cast<Slider>().CurrentValue; } }
+        
+        static int waa { get { return wm["waa"].Cast<Slider>().CurrentValue; } }
+        
+        static float aadmg(AIHeroClient unit)
+        {
+            return ObjectManager.Player.CalculateDamageOnUnit(unit, DamageType.Physical, (float)(1.1*ObjectManager.Player.TotalAttackDamage));
+        }
         
         static void Obj_AI_Base_OnProcessSpellCast(Obj_AI_Base sender, GameObjectProcessSpellCastEventArgs args)
         {
@@ -243,13 +252,13 @@ namespace ParaJinx
             for (n = EntityManager.Heroes.Enemies.Where(x => x.Distance(ObjectManager.Player) < 1500f && !x.IsZombie).GetEnumerator(); n.MoveNext();)
             {
                 var target = n.Current;
-                if (target.IsValidTarget(1500f) && target.Distance(ObjectManager.Player) > wrange && wks && target.Health < GetKsDamageW(target))
+                if (target.IsValidTarget(1500f) && target.Distance(ObjectManager.Player) > ObjectManager.Player.AttackRange + 160f && wks && target.Health < GetKsDamageW(target))
                 {
                     Wcast(target);
                 }
                 else if (wm[target.ChampionName].Cast<CheckBox>().CurrentValue)
                 {
-                    if (target.IsValidTarget(ObjectManager.Player.AttackRange + 100f) && target.Distance(ObjectManager.Player) > wrange && !CanAttack && AttackIsDone)
+                    if (target.Health>aadmg(target)*waa && target.IsValidTarget(ObjectManager.Player.AttackRange + 160f) && target.Distance(ObjectManager.Player) > wrange && !CanAttack && AttackIsDone)
                     {
                         Wcast(target);
                     }
