@@ -98,7 +98,7 @@ namespace ParaJinx
                     wm.AddSeparator();
                     wm.Add("wks", new CheckBox("W KS"));
                     wm.AddSeparator();
-                    wm.Add("wrange", new Slider("Minimum range to use W", 300, 0, 1500));
+                    wm.Add("wrange", new Slider("Minimum range to use W", 650, 0, 900));
                     wm.AddSeparator();
                     wm.AddGroupLabel("W On:");
                     foreach (var enemy in EntityManager.Heroes.Enemies)
