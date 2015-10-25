@@ -12,7 +12,7 @@ namespace ParaJinx
 {
     class Program
     {
-        static Menu menu;
+        static Menu menu, wm;
         
         static IEnumerator<AIHeroClient> i;
 
@@ -85,6 +85,18 @@ namespace ParaJinx
             {
                 menu=MainMenu.AddMenu("ParaJinx","parajinx");
                 menu.Add("combo",new KeyBind("Combo",false,KeyBind.BindTypes.HoldActive,' '));
+                menu.AddSeparator();
+                menu.AddGroupLabel("Para Jinx");
+                menu.AddSeparator();
+                menu.AddLabel("made by Paranoid");
+                wm = menu.AddSubMenu("W Config", "wconfig");
+                    wm.Add("wcombo", new CheckBox("W combo"));
+                    wm.AddSeparator();
+                    wm.Add("wrange", new Slider("Minimum range to use W", 300, 0, 1500));
+                    wm.AddSeparator();
+                    wm.AddGroupLabel("W On:");
+                    foreach (var enemy in EntityManager.Heroes.Enemies)
+                        wm.Add(enemy.ChampionName, new CheckBox(enemy.ChampionName));
                 Obj_AI_Base.OnBasicAttack += Obj_AI_Base_OnBasicAttack;
                 Game.OnTick += Spells;
                 Obj_AI_Base.OnBuffGain += Obj_AI_Base_OnBuffGain;
@@ -93,6 +105,10 @@ namespace ParaJinx
                 Chat.Print("<font color=\"#00BFFF\">Para </font>Jinx<font color=\"#000000\"> by Paranoid </font> - <font color=\"#FFFFFF\">Loaded</font>");
             }
         }
+        
+        static bool wcombo { get { return wm["wcombo"].Cast<CheckBox>().CurrentValue; } }
+        
+        static float wrange { get { return wm["wrange"].Cast<Slider>().CurrentValue; } }
         
         static void Obj_AI_Base_OnProcessSpellCast(Obj_AI_Base sender, GameObjectProcessSpellCastEventArgs args)
         {
@@ -132,7 +148,10 @@ namespace ParaJinx
             var unit = TargetSelector.GetTarget(ObjectManager.Player.AttackRange + 120f,DamageType.Physical);
             if(menu["combo"].Cast<KeyBind>().CurrentValue)
             {
-                Wlogic();
+                if (wcombo)
+                {
+                    Wlogic();
+                }
                 switch (unit.IsValidTarget() && !unit.IsZombie)
                 {
                     case true:
@@ -201,14 +220,14 @@ namespace ParaJinx
         
         static void Wlogic()
         {
-            for (n = EntityManager.Heroes.Enemies.OrderBy(x => x.Health).Where(x => x.Distance(ObjectManager.Player) < 1500f && !x.IsZombie).GetEnumerator(); n.MoveNext();)
+            for (n = EntityManager.Heroes.Enemies.Where(x => x.Distance(ObjectManager.Player) < 1500f && wm[x.ChampionName].Cast<CheckBox>().CurrentValue && !x.IsZombie).GetEnumerator(); n.MoveNext();)
             {
                 var enemy = n.Current;
-                if (enemy.IsValidTarget(ObjectManager.Player.AttackRange + 100f) && enemy.Distance(ObjectManager.Player) > 200f && !CanAttack && AttackIsDone)
+                if (enemy.IsValidTarget(ObjectManager.Player.AttackRange + 100f) && enemy.Distance(ObjectManager.Player) > wrange && !CanAttack && AttackIsDone)
                 {
                     Wcast(enemy);
                 }
-                else if (enemy.IsValidTarget(1500f) && enemy.Distance(ObjectManager.Player) > 200f)
+                else if (enemy.IsValidTarget(1500f) && enemy.Distance(ObjectManager.Player) > wrange)
                 {
                     Wcast(enemy);
                 }
