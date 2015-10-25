@@ -98,7 +98,7 @@ namespace ParaJinx
                     wm.AddSeparator();
                     wm.Add("wks", new CheckBox("W KS"));
                     wm.AddSeparator();
-                    wm.Add("waa", new Slider("Don't use W if can hit target in [x] auto attacks", 2, 2, 6));
+                    wm.Add("waa", new Slider("Don't use W if can kill target in [x] auto attacks", 2, 2, 6));
                    	wm.AddSeparator();
                     wm.Add("wrange", new Slider("Minimum range to use W", 600, 300, 900));
                     wm.AddSeparator();
