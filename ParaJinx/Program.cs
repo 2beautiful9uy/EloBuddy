@@ -6,6 +6,7 @@ using EloBuddy.SDK.Events;
 using EloBuddy.SDK.Menu;
 using EloBuddy.SDK.Menu.Values;
 using EloBuddy.SDK.Enumerations;
+using System.Collections.Generic;
 
 namespace ParaJinx
 {
@@ -13,22 +14,19 @@ namespace ParaJinx
     {
         static Menu menu;
         
-        static System.Collections.Generic.IEnumerator<AIHeroClient> i;
+        static IEnumerator<AIHeroClient> i;
 
-        static System.Collections.Generic.IEnumerator<AIHeroClient> j;
+        static IEnumerator<AIHeroClient> j;
 
-        static System.Collections.Generic.IEnumerator<AIHeroClient> k;
+        static IEnumerator<AIHeroClient> k;
 
-        static System.Collections.Generic.IEnumerator<AIHeroClient> l;
+        static IEnumerator<AIHeroClient> l;
+
+        static IEnumerator<AIHeroClient> n;
 		
         static bool Blitz { get { return EntityManager.Heroes.Allies.FirstOrDefault(x=>x.ChampionName == "Blitzcrank") == null; } }
         
         static readonly Spell.Active Q = new Spell.Active(SpellSlot.Q, 1500);
-        
-        static readonly Spell.Skillshot W = new Spell.Skillshot(SpellSlot.W, 1500, SkillShotType.Linear, 600, 3300, 100)
-        {
-            AllowedCollisionCount = 0, MinimumHitChance = HitChance.High
-        };
         
         static readonly Spell.Skillshot E = new Spell.Skillshot(SpellSlot.E, 900, SkillShotType.Circular, 1200, 1750, 1)
         {
@@ -134,6 +132,7 @@ namespace ParaJinx
             var unit = TargetSelector.GetTarget(ObjectManager.Player.AttackRange + 120f,DamageType.Physical);
             if(menu["combo"].Cast<KeyBind>().CurrentValue)
             {
+                Wlogic();
                 switch (unit.IsValidTarget() && !unit.IsZombie)
                 {
                     case true:
@@ -164,14 +163,6 @@ namespace ParaJinx
                                 break;
                             }
                         }
-                        if (W.IsReady())
-                        {
-                            if (unit.Distance(ObjectManager.Player)>200f && !CanAttack && AttackIsDone)
-                            {
-                                W.AllowedCollisionCount=0;
-                                W.Cast(unit);
-                            }
-                        }
                     }
                     break;
                     case false:
@@ -186,14 +177,6 @@ namespace ParaJinx
                                     if (NormalRange)
                                     {
                                         Q.Cast();
-                                    }
-                                }
-                                if (W.IsReady())
-                                {
-                                    if (unit2.Distance(ObjectManager.Player)>200f)
-                                    {
-                                        W.AllowedCollisionCount=0;
-                                        W.Cast(unit2);
                                     }
                                 }
                             }
@@ -212,6 +195,37 @@ namespace ParaJinx
                         }
                     }
                     break;
+                }
+            }
+        }
+        
+        static void Wlogic()
+        {
+            for (n = EntityManager.Heroes.Enemies.OrderBy(x => x.Health).Where(x => x.Distance(ObjectManager.Player) < 1500f && !x.IsZombie).GetEnumerator(); n.MoveNext();)
+            {
+                var enemy = n.Current;
+                if (enemy.IsValidTarget(ObjectManager.Player.AttackRange + 100f) && enemy.Distance(ObjectManager.Player) > 200f && !CanAttack && AttackIsDone)
+                {
+                    Wcast(enemy);
+                }
+                else if (enemy.IsValidTarget(1500f) && enemy.Distance(ObjectManager.Player) > 200f)
+                {
+                    Wcast(enemy);
+                }
+            }
+        }
+        
+        static void Wcast(AIHeroClient unit)
+        {
+            var W = new Spell.Skillshot(SpellSlot.W, 1500, SkillShotType.Linear, 600, 3300, 90);
+            var predictedPositions = new Dictionary<int, Tuple<int, PredictionResult>>();
+            var prediction = W.GetPrediction(unit);
+            if (W.IsReady())
+            {
+                predictedPositions[unit.NetworkId] = new Tuple<int, PredictionResult>(Environment.TickCount, prediction);
+                if (prediction.HitChance >= HitChance.High)
+                {
+                    W.Cast(prediction.CastPosition);
                 }
             }
         }
