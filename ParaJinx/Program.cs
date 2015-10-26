@@ -103,8 +103,7 @@ namespace ParaJinx {
         static void Obj_AI_Base_OnProcessSpellCast(Obj_AI_Base sender, GameObjectProcessSpellCastEventArgs args) {
             foreach (var enemy in EntityManager.Heroes.Enemies.Where(x => x.IsValidTarget(500f))) {
                 var s = args.SData.Name.ToLower();
-                if (enemy == sender && (s == "katarinar" || s == "drain" || s == "consume" || s == "absolutezero" || s == "staticfield"
-				                || s == "reapthewhirlwind" || s == "shenstandunited" || s == "meditate" || s == "galioidolofdurand"
+                if (enemy == sender && (s == "katarinar" || s == "drain" || s == "crowstorm" || s == "absolutezero" || s == "reapthewhirlwind" || s == "shenstandunited" || s == "meditate" || s == "galioidolofdurand"
 				                || s == "infiniteduress" || s == "alzaharnethergrasp" || s == "velkozr") && E.Cast(enemy.Position)) return; } }
         static void Obj_AI_Base_OnBuffGain(Obj_AI_Base sender, Obj_AI_BaseBuffGainEventArgs args) {
             foreach (var enemy in EntityManager.Heroes.Enemies.Where(x => x.IsValidTarget(2500f))) BlitzGrabOnTarget |= enemy == sender && (args.Buff.Name == "Stun" || args.Buff.Name == "rocketgrab2"); }
