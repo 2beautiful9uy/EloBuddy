@@ -86,17 +86,18 @@ namespace ParaJinx {
                             if (ObjectManager.Player.AttackRange > 550f && Q.Cast()) return; break; } break; } }
         static void Wlogic() {
             var target = TargetSelector.GetTarget(1450f,DamageType.Physical);
-            if (W.IsReady() && target.Distance(ObjectManager.Player) > wm["wrange"].Cast<Slider>().CurrentValue && wm[target.ChampionName].Cast<CheckBox>().CurrentValue) {
-                if (target.Distance(ObjectManager.Player) < ObjectManager.Player.AttackRange + 170f) {
-                    if (target.Health > wm["waa"].Cast<Slider>().CurrentValue * ObjectManager.Player.CalculateDamageOnUnit(target, DamageType.Physical, (float)(1.1 * ObjectManager.Player.TotalAttackDamage)) && !CanAttack && AttackIsDone && W.Cast(target)) return; }
-                else if (W.Cast(target)) return; } }
+            if (target.Distance(ObjectManager.Player) > wm["wrange"].Cast<Slider>().CurrentValue && wm[target.ChampionName].Cast<CheckBox>().CurrentValue) {
+                if (target.Distance(ObjectManager.Player) <= ObjectManager.Player.AttackRange + 170f && target.Health > wm["waa"].Cast<Slider>().CurrentValue * ObjectManager.Player.CalculateDamageOnUnit(target, DamageType.Physical, (float)(1.1 * ObjectManager.Player.TotalAttackDamage)) && !CanAttack && AttackIsDone && W.Cast(target)) return;
+                if (target.Distance(ObjectManager.Player) > ObjectManager.Player.AttackRange + 170f && W.Cast(target)) return; } }
         
         
         // W KS
         static void Wks() {
-            foreach (var hero in EntityManager.Heroes.Enemies.Where(x=>x.IsValidTarget(1450f) && !x.IsZombie && W.IsReady() && x.Health < ObjectManager.Player.CalculateDamageOnUnit(x, DamageType.Physical, (float)(new [] {10, 60, 110, 160, 210}[W.Level - 1] + 1.4*(ObjectManager.Player.TotalAttackDamage))) && W.Cast(x))) return; }
-        
-        
+            foreach (var enemy in EntityManager.Heroes.Enemies.Where(x=>x.IsValidTarget(1450f) && !x.IsZombie && x.Distance(ObjectManager.Player) > wm["wrange"].Cast<Slider>().CurrentValue && x.Health < ObjectManager.Player.CalculateDamageOnUnit(x, DamageType.Physical, (float)(new [] {10, 60, 110, 160, 210}[W.Level - 1] + 1.4*(ObjectManager.Player.TotalAttackDamage))))) {
+                if (enemy.Distance(ObjectManager.Player) <= ObjectManager.Player.AttackRange + 170f && enemy.Health > wm["waa"].Cast<Slider>().CurrentValue * ObjectManager.Player.CalculateDamageOnUnit(enemy, DamageType.Physical, (float)(1.1 * ObjectManager.Player.TotalAttackDamage)) && !CanAttack && AttackIsDone && W.Cast(enemy)) return;
+                if (enemy.Distance(ObjectManager.Player) > ObjectManager.Player.AttackRange + 170f && W.Cast(enemy)) return; } }
+
+
         // E LOGIC
         static readonly Spell.Skillshot E = new Spell.Skillshot(SpellSlot.E, 900, SkillShotType.Circular, 1200, 1750, 1);
         static void Obj_AI_Base_OnProcessSpellCast(Obj_AI_Base sender, GameObjectProcessSpellCastEventArgs args) {
