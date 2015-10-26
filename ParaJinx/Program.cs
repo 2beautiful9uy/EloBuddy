@@ -48,12 +48,12 @@ namespace ParaJinx {
         
         // ON UPDATE
         static void Spells(EventArgs args) {
-            if (wm["wks"].Cast<CheckBox>().CurrentValue) Wks();
+            if (W.IsReady() && wm["wks"].Cast<CheckBox>().CurrentValue) Wks();
             if (BlitzGrabOnTarget && Game.Time * 1000 > blitzgrab + 1000f) BlitzGrabOnTarget = false;
             if (E.IsReady()) Elogic();
             if(menu["combo"].Cast<KeyBind>().CurrentValue) {
-                if (qm["qcombo"].Cast<CheckBox>().CurrentValue) Qcombo();
-                if (wm["wcombo"].Cast<CheckBox>().CurrentValue) Wlogic(); } }
+                if (Q.IsReady() && qm["qcombo"].Cast<CheckBox>().CurrentValue) Qcombo();
+                if (W.IsReady() && wm["wcombo"].Cast<CheckBox>().CurrentValue) Wlogic(); } }
         
         
         // Q, W COMBO
