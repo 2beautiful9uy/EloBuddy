@@ -93,7 +93,7 @@ namespace ParaOrb
                     case "jinx":
                     {
                         var Q = new Spell.Active(SpellSlot.Q);
-                        var qt = TargetSelector.GetTarget(655f + 50f + 25f * Q.Level, DamageType.Physical);
+                        var qt = TargetSelector.GetTarget(685f + 50f + 25f * Q.Level, DamageType.Physical);
                         var nt = TargetSelector.GetTarget(655f, DamageType.Physical);
                         if (ObjectManager.Player.AttackRange>550f)
                         {
