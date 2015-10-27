@@ -38,6 +38,11 @@ namespace ParaJinx {
                     wm.AddGroupLabel("W On:");
                     foreach (var enemy in EntityManager.Heroes.Enemies)
                         wm.Add(enemy.ChampionName, new CheckBox(enemy.ChampionName));
+                    wm.AddSeparator();
+                    wm.AddGroupLabel("Prediction:");
+                    wm.Add("whit", new Slider("Minimum Hitchance", 80, 1, 100));
+                    wm.AddSeparator();
+                    wm.Add("wpred", new Slider("Prediction Mode: [1]=target [2]=castposition", 1, 1, 2));
                 Obj_AI_Base.OnBasicAttack += Obj_AI_Base_OnBasicAttack;
                 Game.OnUpdate += Spells;
                 Obj_AI_Base.OnBuffGain += Obj_AI_Base_OnBuffGain;
@@ -53,12 +58,12 @@ namespace ParaJinx {
             if (E.IsReady()) Elogic();
             if(menu["combo"].Cast<KeyBind>().CurrentValue) {
                 if (Q.IsReady() && qm["qcombo"].Cast<CheckBox>().CurrentValue) Qcombo();
-                if (W.IsReady() && wm["wcombo"].Cast<CheckBox>().CurrentValue) Wlogic(); } }
+                if (W.IsReady() && wm["wcombo"].Cast<CheckBox>().CurrentValue) Wcombo(); } }
         
         
         // Q, W COMBO
         static readonly Spell.Active Q = new Spell.Active(SpellSlot.Q, 1500);
-        static readonly Spell.Skillshot W = new Spell.Skillshot(SpellSlot.W, 1500, SkillShotType.Linear, 600, 3300, 90);
+        static readonly Spell.Skillshot W = new Spell.Skillshot(SpellSlot.W, 1500, SkillShotType.Linear, 600, 3300, 60);
         static void Obj_AI_Base_OnBasicAttack(Obj_AI_Base sender, GameObjectProcessSpellCastEventArgs args) {
             if (sender.IsMe) lastaa = Game.Time * 1000; }
         static bool NormalRange { get { return ((ushort)ObjectManager.Player.AttackRange == 524 || (ushort)ObjectManager.Player.AttackRange == 525
@@ -84,20 +89,19 @@ namespace ParaJinx {
                             if (NormalRange && Q.Cast()) return; break;
                         case false:
                             if (ObjectManager.Player.AttackRange > 550f && Q.Cast()) return; break; } break; } }
-        static void Wlogic() {
-            var target = TargetSelector.GetTarget(1450f,DamageType.Physical);
-            if (target.Distance(ObjectManager.Player) > wm["wrange"].Cast<Slider>().CurrentValue && wm[target.ChampionName].Cast<CheckBox>().CurrentValue) {
-                if (target.Distance(ObjectManager.Player) <= ObjectManager.Player.AttackRange + 170f && target.Health > wm["waa"].Cast<Slider>().CurrentValue * ObjectManager.Player.CalculateDamageOnUnit(target, DamageType.Physical, (float)(1.1 * ObjectManager.Player.TotalAttackDamage)) && !CanAttack && AttackIsDone && W.Cast(target)) return;
-                if (target.Distance(ObjectManager.Player) > ObjectManager.Player.AttackRange + 170f && W.Cast(target)) return; } }
-        
-        
-        // W KS
-        static void Wks() {
-            foreach (var enemy in EntityManager.Heroes.Enemies.Where(x=>x.IsValidTarget(1450f) && !x.IsZombie && x.Distance(ObjectManager.Player) > wm["wrange"].Cast<Slider>().CurrentValue && x.Health < ObjectManager.Player.CalculateDamageOnUnit(x, DamageType.Physical, (float)(new [] {10, 60, 110, 160, 210}[W.Level - 1] + 1.4*(ObjectManager.Player.TotalAttackDamage))))) {
-                if (enemy.Distance(ObjectManager.Player) <= ObjectManager.Player.AttackRange + 170f && enemy.Health > wm["waa"].Cast<Slider>().CurrentValue * ObjectManager.Player.CalculateDamageOnUnit(enemy, DamageType.Physical, (float)(1.1 * ObjectManager.Player.TotalAttackDamage)) && !CanAttack && AttackIsDone && W.Cast(enemy)) return;
-                if (enemy.Distance(ObjectManager.Player) > ObjectManager.Player.AttackRange + 170f && W.Cast(enemy)) return; } }
+        static void Wcombo() { var target = TargetSelector.GetTarget(1450f,DamageType.Physical); if (target.Distance(ObjectManager.Player) > wm["wrange"].Cast<Slider>().CurrentValue && wm[target.ChampionName].Cast<CheckBox>().CurrentValue) WCast(target); }
+        static void Wks() { foreach (var enemy in EntityManager.Heroes.Enemies.Where(x=>x.IsValidTarget(1450f) && !x.IsZombie && x.Distance(ObjectManager.Player) > wm["wrange"].Cast<Slider>().CurrentValue && x.Health < ObjectManager.Player.CalculateDamageOnUnit(x, DamageType.Physical, (float)(new [] {10, 60, 110, 160, 210}[W.Level - 1] + 1.4*(ObjectManager.Player.TotalAttackDamage))))) WCast(enemy); }
+        static void WCast(AIHeroClient unit) {
+            var pred = W.GetPrediction(unit);
+            switch (wm["wpred"].Cast<Slider>().CurrentValue) {
+                case 1:
+                    if (unit.Distance(ObjectManager.Player) <= ObjectManager.Player.AttackRange + 170f && unit.Health > wm["waa"].Cast<Slider>().CurrentValue * ObjectManager.Player.CalculateDamageOnUnit(unit, DamageType.Physical, (float)(1.1 * ObjectManager.Player.TotalAttackDamage)) && !CanAttack && AttackIsDone && pred.HitChancePercent>=wm["whit"].Cast<Slider>().CurrentValue && W.Cast(unit)) return;
+                    if (unit.Distance(ObjectManager.Player) > ObjectManager.Player.AttackRange + 170f && pred.HitChancePercent>=wm["whit"].Cast<Slider>().CurrentValue && W.Cast(unit)) return; break;
+                case 2:
+                    if (unit.Distance(ObjectManager.Player) <= ObjectManager.Player.AttackRange + 170f && unit.Health > wm["waa"].Cast<Slider>().CurrentValue * ObjectManager.Player.CalculateDamageOnUnit(unit, DamageType.Physical, (float)(1.1 * ObjectManager.Player.TotalAttackDamage)) && !CanAttack && AttackIsDone && pred.HitChancePercent>=wm["whit"].Cast<Slider>().CurrentValue && W.Cast(pred.CastPosition)) return;
+                    if (unit.Distance(ObjectManager.Player) > ObjectManager.Player.AttackRange + 170f && pred.HitChancePercent>=wm["whit"].Cast<Slider>().CurrentValue && W.Cast(pred.CastPosition)) return; break; } }
 
-
+        
         // E LOGIC
         static readonly Spell.Skillshot E = new Spell.Skillshot(SpellSlot.E, 900, SkillShotType.Circular, 1200, 1750, 1);
         static void Obj_AI_Base_OnProcessSpellCast(Obj_AI_Base sender, GameObjectProcessSpellCastEventArgs args) {
