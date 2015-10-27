@@ -23,26 +23,21 @@ namespace ParaJinx {
                 menu.AddSeparator();
                 menu.AddLabel("made by Paranoid");
                 qm = menu.AddSubMenu("Q Config", "qconfig");
+                    qm.AddGroupLabel("Q combo:");
                     qm.Add("qcombo", new CheckBox("Q Combo"));
-                    qm.AddSeparator();
                     qm.Add("qtargets", new Slider("Q if splash can hit [x] targets", 3, 0, 5));
                 wm = menu.AddSubMenu("W Config", "wconfig");
-                    wm.Add("wcombo", new CheckBox("W combo"));
-                    wm.AddSeparator();
-                    wm.Add("wks", new CheckBox("W KS"));
-                    wm.AddSeparator();
-                    wm.Add("waa", new Slider("Don't use W if can kill target in [x] auto attacks", 2, 2, 6));
-                   	wm.AddSeparator();
-                    wm.Add("wrange", new Slider("Minimum range to use W", 600, 300, 900));
-                    wm.AddSeparator();
-                    wm.AddGroupLabel("W On:");
-                    foreach (var enemy in EntityManager.Heroes.Enemies)
-                        wm.Add(enemy.ChampionName, new CheckBox(enemy.ChampionName));
-                    wm.AddSeparator();
                     wm.AddGroupLabel("Prediction:");
                     wm.Add("whit", new Slider("Minimum Hitchance", 80, 1, 100));
-                    wm.AddSeparator();
-                    wm.Add("wpred", new Slider("Prediction Mode: [1]=target [2]=castposition", 1, 1, 2));
+                    wm.Add("wpred", new Slider("Prediction Mode: [1]=target [2]=pred.castposition", 2, 1, 2));
+                    wm.AddGroupLabel("W combo On: [ks = all champions] ");
+                    foreach (var enemy in EntityManager.Heroes.Enemies)
+                        wm.Add(enemy.ChampionName, new CheckBox(enemy.ChampionName));
+                    wm.AddGroupLabel("W combo and ks");
+                    wm.Add("wcombo", new CheckBox("W combo"));
+                    wm.Add("wks", new CheckBox("W KS"));
+                    wm.Add("waa", new Slider("In attack range -> Don't use W if can kill target in [x] auto attacks", 2, 2, 6));
+                    wm.Add("wrange", new Slider("Minimum range to use W", 600, 300, 900));
                 Obj_AI_Base.OnBasicAttack += Obj_AI_Base_OnBasicAttack;
                 Game.OnUpdate += Spells;
                 Obj_AI_Base.OnBuffGain += Obj_AI_Base_OnBuffGain;
