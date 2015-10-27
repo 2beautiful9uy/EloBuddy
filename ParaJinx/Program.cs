@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Linq;
+using System.Drawing;
 using EloBuddy;
 using EloBuddy.SDK;
 using EloBuddy.SDK.Events;
@@ -28,7 +29,8 @@ namespace ParaJinx {
                     qm.Add("qtargets", new Slider("Q if splash can hit [x] targets", 3, 0, 5));
                 wm = menu.AddSubMenu("W Config", "wconfig");
                     wm.AddGroupLabel("Prediction:");
-                    wm.Add("whit", new Slider("Minimum Hitchance", 80, 1, 100));
+                    wm.Add("wtest", new CheckBox("Draw -> % W accuracy"));
+                    wm.Add("whit", new Slider("Minimum Hitchance %", 80, 1, 100));
                     wm.Add("wpred", new Slider("Prediction Mode: [1]=target [2]=pred.castposition", 2, 1, 2));
                     wm.AddGroupLabel("W combo On: [ks = all champions] ");
                     foreach (var enemy in EntityManager.Heroes.Enemies)
@@ -37,12 +39,14 @@ namespace ParaJinx {
                     wm.Add("wcombo", new CheckBox("W combo"));
                     wm.Add("wks", new CheckBox("W KS"));
                     wm.Add("waa", new Slider("In attack range -> Don't use W if can kill target in [x] auto attacks", 2, 2, 6));
-                    wm.Add("wrange", new Slider("Minimum range to use W", 600, 300, 900));
+                    wm.Add("wrange", new Slider("Minimum range to use W", 600, 500, 900));
+                    wm.Add("wmrange", new Slider("Minimum enemy minion distance to Jinx or Target", 350, 200, 500));
                 Obj_AI_Base.OnBasicAttack += Obj_AI_Base_OnBasicAttack;
                 Game.OnUpdate += Spells;
                 Obj_AI_Base.OnBuffGain += Obj_AI_Base_OnBuffGain;
                 Obj_AI_Base.OnSpellCast += Obj_AI_Base_OnSpellCast;
                 Obj_AI_Base.OnProcessSpellCast += Obj_AI_Base_OnProcessSpellCast;
+                Drawing.OnDraw += Drawing_OnDraw;
                 Chat.Print("<font color=\"#00BFFF\">Para </font>Jinx<font color=\"#000000\"> by Paranoid </font> - <font color=\"#FFFFFF\">Loaded</font>"); } }
         
         
@@ -54,11 +58,15 @@ namespace ParaJinx {
             if(menu["combo"].Cast<KeyBind>().CurrentValue) {
                 if (Q.IsReady() && qm["qcombo"].Cast<CheckBox>().CurrentValue) Qcombo();
                 if (W.IsReady() && wm["wcombo"].Cast<CheckBox>().CurrentValue) Wcombo(); } }
+
         
-        
-        // Q, W COMBO
+        // Q COMBO, W COMBO and KS
         static readonly Spell.Active Q = new Spell.Active(SpellSlot.Q, 1500);
         static readonly Spell.Skillshot W = new Spell.Skillshot(SpellSlot.W, 1500, SkillShotType.Linear, 600, 3300, 60);
+        static void Drawing_OnDraw(EventArgs args) {
+            if (wm["wtest"].Cast<CheckBox>().CurrentValue) {
+                Drawing.DrawText(Drawing.WorldToScreen(Player.Instance.Position).X, Drawing.WorldToScreen(Player.Instance.Position).Y, Color.Bisque, "Casted W: "+wcount+". On target: "+wontarget+".", 4);
+                Drawing.DrawText(Drawing.WorldToScreen(Player.Instance.Position).X, Drawing.WorldToScreen(Player.Instance.Position).Y + 15, Color.Bisque, (wontarget*100)/wcount+"% accuracy.", 4); } }
         static void Obj_AI_Base_OnBasicAttack(Obj_AI_Base sender, GameObjectProcessSpellCastEventArgs args) {
             if (sender.IsMe) lastaa = Game.Time * 1000; }
         static bool NormalRange { get { return ((ushort)ObjectManager.Player.AttackRange == 524 || (ushort)ObjectManager.Player.AttackRange == 525
@@ -84,17 +92,20 @@ namespace ParaJinx {
                             if (NormalRange && Q.Cast()) return; break;
                         case false:
                             if (ObjectManager.Player.AttackRange > 550f && Q.Cast()) return; break; } break; } }
+        static int wcount, wontarget;
         static void Wcombo() { var target = TargetSelector.GetTarget(1450f,DamageType.Physical); if (target.Distance(ObjectManager.Player) > wm["wrange"].Cast<Slider>().CurrentValue && wm[target.ChampionName].Cast<CheckBox>().CurrentValue) WCast(target); }
         static void Wks() { foreach (var enemy in EntityManager.Heroes.Enemies.Where(x=>x.IsValidTarget(1450f) && !x.IsZombie && x.Distance(ObjectManager.Player) > wm["wrange"].Cast<Slider>().CurrentValue && x.Health < ObjectManager.Player.CalculateDamageOnUnit(x, DamageType.Physical, (float)(new [] {10, 60, 110, 160, 210}[W.Level - 1] + 1.4*(ObjectManager.Player.TotalAttackDamage))))) WCast(enemy); }
         static void WCast(AIHeroClient unit) {
+            var minionme = EntityManager.MinionsAndMonsters.EnemyMinions.Any(x=>!x.IsDead && x.IsVisible && x.Health>0 && x.Distance(ObjectManager.Player)<wm["wmrange"].Cast<Slider>().CurrentValue);
+            var minionenemy = EntityManager.MinionsAndMonsters.EnemyMinions.Any(x=>!x.IsDead && x.IsVisible && x.Health>0 && x.Distance(unit)<wm["wmrange"].Cast<Slider>().CurrentValue);
             var pred = W.GetPrediction(unit);
             switch (wm["wpred"].Cast<Slider>().CurrentValue) {
                 case 1:
-                    if (unit.Distance(ObjectManager.Player) <= ObjectManager.Player.AttackRange + 170f && unit.Health > wm["waa"].Cast<Slider>().CurrentValue * ObjectManager.Player.CalculateDamageOnUnit(unit, DamageType.Physical, (float)(1.1 * ObjectManager.Player.TotalAttackDamage)) && !CanAttack && AttackIsDone && pred.HitChancePercent>=wm["whit"].Cast<Slider>().CurrentValue && W.Cast(unit)) return;
-                    if (unit.Distance(ObjectManager.Player) > ObjectManager.Player.AttackRange + 170f && pred.HitChancePercent>=wm["whit"].Cast<Slider>().CurrentValue && W.Cast(unit)) return; break;
+                    if (unit.Distance(ObjectManager.Player) <= ObjectManager.Player.AttackRange + 170f && unit.Health > wm["waa"].Cast<Slider>().CurrentValue * ObjectManager.Player.CalculateDamageOnUnit(unit, DamageType.Physical, (float)(1.1 * ObjectManager.Player.TotalAttackDamage)) && !CanAttack && AttackIsDone && !minionme && !minionenemy && pred.HitChancePercent>=wm["whit"].Cast<Slider>().CurrentValue && W.Cast(unit)) return;
+                    if (unit.Distance(ObjectManager.Player) > ObjectManager.Player.AttackRange + 170f && !minionme && !minionenemy && pred.HitChancePercent>=wm["whit"].Cast<Slider>().CurrentValue && W.Cast(unit)) return; break;
                 case 2:
-                    if (unit.Distance(ObjectManager.Player) <= ObjectManager.Player.AttackRange + 170f && unit.Health > wm["waa"].Cast<Slider>().CurrentValue * ObjectManager.Player.CalculateDamageOnUnit(unit, DamageType.Physical, (float)(1.1 * ObjectManager.Player.TotalAttackDamage)) && !CanAttack && AttackIsDone && pred.HitChancePercent>=wm["whit"].Cast<Slider>().CurrentValue && W.Cast(pred.CastPosition)) return;
-                    if (unit.Distance(ObjectManager.Player) > ObjectManager.Player.AttackRange + 170f && pred.HitChancePercent>=wm["whit"].Cast<Slider>().CurrentValue && W.Cast(pred.CastPosition)) return; break; } }
+                    if (unit.Distance(ObjectManager.Player) <= ObjectManager.Player.AttackRange + 170f && unit.Health > wm["waa"].Cast<Slider>().CurrentValue * ObjectManager.Player.CalculateDamageOnUnit(unit, DamageType.Physical, (float)(1.1 * ObjectManager.Player.TotalAttackDamage)) && !CanAttack && AttackIsDone && !minionme && !minionenemy && pred.HitChancePercent>=wm["whit"].Cast<Slider>().CurrentValue && W.Cast(pred.CastPosition)) return;
+                    if (unit.Distance(ObjectManager.Player) > ObjectManager.Player.AttackRange + 170f && !minionme && !minionenemy && pred.HitChancePercent>=wm["whit"].Cast<Slider>().CurrentValue && W.Cast(pred.CastPosition)) return; break; } }
 
         
         // E LOGIC
@@ -105,8 +116,11 @@ namespace ParaJinx {
                 if (enemy == sender && (s == "katarinar" || s == "drain" || s == "crowstorm" || s == "absolutezero" || s == "reapthewhirlwind" || s == "shenstandunited" || s == "meditate" || s == "galioidolofdurand"
 				                || s == "infiniteduress" || s == "alzaharnethergrasp" || s == "velkozr") && E.Cast(enemy.Position)) return; } }
         static void Obj_AI_Base_OnBuffGain(Obj_AI_Base sender, Obj_AI_BaseBuffGainEventArgs args) {
-            foreach (var enemy in EntityManager.Heroes.Enemies.Where(x => x.IsValidTarget(2500f))) BlitzGrabOnTarget |= enemy == sender && (args.Buff.Name == "Stun" || args.Buff.Name == "rocketgrab2"); }
+            foreach (var enemy in EntityManager.Heroes.Enemies.Where(x => x.IsValidTarget(2500f))) {
+                if (enemy == sender && args.Buff.Name.ToLower()=="jinxwsight") wontarget = wontarget + 1;
+                BlitzGrabOnTarget |= enemy == sender && (args.Buff.Name == "Stun" || args.Buff.Name == "rocketgrab2"); } }
         static void Obj_AI_Base_OnSpellCast(Obj_AI_Base sender, GameObjectProcessSpellCastEventArgs args) {
+            if (sender.IsMe && args.SData.Name.ToLower() == "jinxwmissile") wcount = wcount + 1;
             if (!Blitz) {
                 var blitzcrank = EntityManager.Heroes.Allies.FirstOrDefault(x=>x.ChampionName == "Blitzcrank");
                 if (sender == blitzcrank && (args.SData.Name == "RocketGrab" || args.SData.Name == "RocketGrabMissile")) blitzgrab = Game.Time * 1000; } }       
