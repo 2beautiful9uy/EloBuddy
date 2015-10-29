@@ -16,7 +16,7 @@ namespace ParaJinx
         
         static readonly Spell.Active Q = new Spell.Active(SpellSlot.Q, 1500);
         
-        static readonly Spell.Skillshot W = new Spell.Skillshot(SpellSlot.W, 1500, SkillShotType.Linear, 600, 3300, 60);
+        static readonly Spell.Skillshot W = new Spell.Skillshot(SpellSlot.W, 1500, SkillShotType.Linear, 600, 3200, 80);
         
         static readonly Spell.Skillshot E = new Spell.Skillshot(SpellSlot.E, 900, SkillShotType.Circular, 1200, 1750, 1);
         
@@ -234,13 +234,11 @@ namespace ParaJinx
         
         static void WCast(AIHeroClient unit)
         {
-            var minionme = EntityManager.MinionsAndMonsters.EnemyMinions.Any(x => !x.IsDead && x.IsVisible && x.Health > 0 && x.Distance(ObjectManager.Player) < 300f);
-            var minionenemy = EntityManager.MinionsAndMonsters.EnemyMinions.Any(x => !x.IsDead && x.IsVisible && x.Health > 0 && x.Distance(unit) < 300f);
-            if (unit.Distance(ObjectManager.Player) <= ObjectManager.Player.AttackRange + 170f && unit.Health > wm["waa"].Cast<Slider>().CurrentValue * ObjectManager.Player.CalculateDamageOnUnit(unit, DamageType.Physical, (float)(1.1 * ObjectManager.Player.TotalAttackDamage)) && !CanAttack && AttackIsDone && !minionme && !minionenemy)
+            if (unit.Distance(ObjectManager.Player) <= ObjectManager.Player.AttackRange + 170f && unit.Health > wm["waa"].Cast<Slider>().CurrentValue * ObjectManager.Player.CalculateDamageOnUnit(unit, DamageType.Physical, (float)(1.1 * ObjectManager.Player.TotalAttackDamage)) && !CanAttack && AttackIsDone)
             {
                 W.Cast(unit);
             }
-            if (unit.Distance(ObjectManager.Player) > ObjectManager.Player.AttackRange + 170f && unit.Health>10 && !minionme && !minionenemy)
+            if (unit.Distance(ObjectManager.Player) > ObjectManager.Player.AttackRange + 170f && unit.Health>10)
             {
                 W.Cast(unit);
             }
