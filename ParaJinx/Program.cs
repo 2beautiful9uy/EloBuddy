@@ -226,7 +226,7 @@ namespace ParaJinx
         
         static void Wks()
         {
-            foreach (var enemy in EntityManager.Heroes.Enemies.Where(x=>x.IsValidTarget(1450f) && x.Health>10 && !x.IsZombie && x.Distance(ObjectManager.Player) > 475f && x.Health < ObjectManager.Player.CalculateDamageOnUnit(x, DamageType.Physical, (float)(new [] {10, 60, 110, 160, 210}[W.Level - 1] + 1.4*(ObjectManager.Player.TotalAttackDamage)))))
+            foreach (var enemy in EntityManager.Heroes.Enemies.Where(x=>x.IsValidTarget(1450f) && !x.IsZombie && x.Distance(ObjectManager.Player) > 475f && x.Health < ObjectManager.Player.CalculateDamageOnUnit(x, DamageType.Physical, (float)(new [] {10, 60, 110, 160, 210}[W.Level - 1] + 1.4*(ObjectManager.Player.TotalAttackDamage)))))
             {
                 WCast(enemy);
             }
@@ -234,11 +234,11 @@ namespace ParaJinx
         
         static void WCast(AIHeroClient unit)
         {
-            if (unit.Distance(ObjectManager.Player) <= ObjectManager.Player.AttackRange + 170f && unit.Health > wm["waa"].Cast<Slider>().CurrentValue * ObjectManager.Player.CalculateDamageOnUnit(unit, DamageType.Physical, (float)(1.1 * ObjectManager.Player.TotalAttackDamage)) && !CanAttack && AttackIsDone)
+            if (unit.Distance(ObjectManager.Player) < ObjectManager.Player.AttackRange + 130f && unit.Health > wm["waa"].Cast<Slider>().CurrentValue * ObjectManager.Player.CalculateDamageOnUnit(unit, DamageType.Physical, (float)(1.1 * ObjectManager.Player.TotalAttackDamage)) && !CanAttack && AttackIsDone)
             {
                 W.Cast(unit);
             }
-            if (unit.Distance(ObjectManager.Player) > ObjectManager.Player.AttackRange + 170f && unit.Health>10)
+            if (unit.Distance(ObjectManager.Player) > ObjectManager.Player.AttackRange + 130f)
             {
                 W.Cast(unit);
             }
