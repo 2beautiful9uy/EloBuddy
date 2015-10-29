@@ -12,7 +12,7 @@ namespace ParaJinx
 {
     class Program
     {
-        static Menu menu, qm, wm;
+        static Menu menu, qm, wm, om;
         
         static readonly Spell.Active Q = new Spell.Active(SpellSlot.Q, 1500);
         
@@ -59,6 +59,10 @@ namespace ParaJinx
                 menu.AddGroupLabel("Para Jinx");
                 menu.AddSeparator();
                 menu.AddLabel("made by Paranoid");
+                om = menu.AddSubMenu("Orb Config", "orbconfig");
+                om.AddGroupLabel("ParaOrb Settings:");
+                om.Add("useorb", new CheckBox("ParaOrb"));
+                om.Add("cancel", new Slider("If you have aa cancel change to 5 or higher", 0, 0, 25));
                 qm = menu.AddSubMenu("Q Config", "qconfig");
                 qm.AddGroupLabel("Q combo:");
                 qm.Add("qcombo", new CheckBox("Q Combo"));
@@ -81,6 +85,17 @@ namespace ParaJinx
             
         static void Game_OnUpdate(EventArgs args)
         {
+            if (Orbwalker.ActiveModesFlags.HasFlag(Orbwalker.ActiveModes.Harass) || Orbwalker.ActiveModesFlags.HasFlag(Orbwalker.ActiveModes.LaneClear) || Orbwalker.ActiveModesFlags.HasFlag(Orbwalker.ActiveModes.LastHit) || Orbwalker.ActiveModesFlags.HasFlag(Orbwalker.ActiveModes.JungleClear) || Orbwalker.ActiveModesFlags.HasFlag(Orbwalker.ActiveModes.Flee))
+            {
+                if (Orbwalker.DisableAttacking == true)
+                {
+                    Orbwalker.DisableAttacking = false;
+                }
+                if (Orbwalker.DisableMovement == true)
+                {
+                    Orbwalker.DisableMovement = false;
+                }
+            }
             if (W.IsReady() && wm["wks"].Cast<CheckBox>().CurrentValue)
             {
                 Wks();
@@ -106,6 +121,30 @@ namespace ParaJinx
                 if (W.IsReady() && wm["wcombo"].Cast<CheckBox>().CurrentValue)
                 {
                     Wcombo();
+                }
+                
+                if (om["useorb"].Cast<CheckBox>().CurrentValue)
+                {
+                    if (Orbwalker.DisableAttacking == false)
+                    {
+                        Orbwalker.DisableAttacking = true;
+                    }
+                    if (Orbwalker.DisableMovement == false)
+                    {
+                        Orbwalker.DisableMovement = true;
+                    }
+                    Orb();
+                }
+                else
+                {
+                    if (Orbwalker.DisableAttacking == true)
+                    {
+                        Orbwalker.DisableAttacking = false;
+                    }
+                    if (Orbwalker.DisableMovement == true)
+                    {
+                        Orbwalker.DisableMovement = false;
+                    }
                 }
             }
         }
@@ -238,7 +277,7 @@ namespace ParaJinx
             {
                 W.Cast(unit);
             }
-            if (unit.Distance(ObjectManager.Player) > ObjectManager.Player.AttackRange + 130f)
+            if (unit.Distance(ObjectManager.Player) > 730f + 25 * Q.Level)
             {
                 W.Cast(unit);
             }
@@ -279,6 +318,54 @@ namespace ParaJinx
                             E.Cast(enemy.Position);
                         }
                     }
+                }
+            }
+        }
+        
+        static void Orb()
+        {
+            var qt = TargetSelector.GetTarget(730f + 25f * Q.Level, DamageType.Physical);
+            var nt = TargetSelector.GetTarget(655f, DamageType.Physical);
+            if (ObjectManager.Player.AttackRange>525)
+            {
+                if (qt.IsValidTarget() && !qt.IsZombie)
+                {
+                    if (Game.Time * 1000 > lastaa + ObjectManager.Player.AttackDelay * 1000 - 150f)
+                    {
+                        Player.IssueOrder(GameObjectOrder.AttackUnit, qt);
+                    }
+                    else
+                    {
+                        if (Game.Time * 1000 > lastaa + ObjectManager.Player.AttackCastDelay * 1000 - 60f + (float)(om["cancel"].Cast<Slider>().CurrentValue))
+                        {
+                            Player.IssueOrder(GameObjectOrder.MoveTo, Game.CursorPos);
+                        }
+                    }
+                }
+                else
+                {
+                    Player.IssueOrder(GameObjectOrder.MoveTo, Game.CursorPos);
+                }
+            }
+            else
+            {
+                if (nt.IsValidTarget() && !nt.IsZombie)
+                {
+                    if (Game.Time * 1000 > lastaa + ObjectManager.Player.AttackDelay * 1000 - 150f)
+                    {
+                        Player.IssueOrder(GameObjectOrder.AttackUnit, nt);
+                    }
+                    else
+                    {
+                        if (Game.Time * 1000 > lastaa + ObjectManager.Player.AttackCastDelay * 1000 - 60f + (float)(om["cancel"].Cast<Slider>().CurrentValue))
+                        {
+                            Player.IssueOrder(GameObjectOrder.MoveTo, Game.CursorPos);
+                        }
+                    }
+                }
+                else
+                {
+                    Player.IssueOrder(GameObjectOrder.MoveTo, Game.CursorPos);
                 }
             }
         }
