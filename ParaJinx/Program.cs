@@ -212,7 +212,7 @@ namespace ParaJinx
         
         static void Qcombo()
         {
-            var unit = TargetSelector.GetTarget(ObjectManager.Player.AttackRange + 130f, DamageType.Physical);
+            var unit = TargetSelector.GetTarget(ObjectManager.Player.AttackRange + 100f, DamageType.Physical);
             if (unit.IsValidTarget() && !unit.IsZombie)
             {
                 if (EntityManager.Heroes.Enemies.Count(x => x.IsValidTarget(1500f) && x.Distance(unit) < 250f && !x.IsZombie) >= qm["qtargets"].Cast<Slider>().CurrentValue)
