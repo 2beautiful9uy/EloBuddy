@@ -217,51 +217,30 @@ namespace ParaJinx
 
         static void Wcombo()
         {
-            var unit = TargetSelector.GetTarget(1450f, DamageType.Physical);
-            if (unit.IsValidTarget() && !unit.IsZombie && unit.Distance(ObjectManager.Player) > 475f)
+            var target = TargetSelector.GetTarget(1450f, DamageType.Physical);
+            if (target.IsValidTarget() && target.Distance(ObjectManager.Player) > 475f)
             {
-                var minion = EntityManager.MinionsAndMonsters.EnemyMinions.Any(x=>!x.IsDead && x.IsVisible && x.Health>0 && x.Distance(unit)<200);
-                if (!minion)
-                {
-                    if (unit.Distance(ObjectManager.Player) < ObjectManager.Player.AttackRange + 130f)
-                    {
-                        var aadmg = ObjectManager.Player.CalculateDamageOnUnit(unit, DamageType.Physical, (float)(1.1 * ObjectManager.Player.TotalAttackDamage));
-                        if (!CanAttack && AttackIsDone && unit.Health > wm["waa"].Cast<Slider>().CurrentValue * aadmg)
-                        {
-                            W.Cast(unit);
-                        }
-                    }
-                    else
-                    {
-                        W.Cast(unit);
-                    }
-                }
+                WCast(target);
             }
         }
         
         static void Wks()
         {
-            foreach (var unit in EntityManager.Heroes.Enemies.Where(x=>!x.IsZombie && x.Distance(ObjectManager.Player) > 475f && x.Distance(ObjectManager.Player) < 1450f))
+            foreach (var enemy in EntityManager.Heroes.Enemies.Where(x=>x.IsValidTarget(1450f) && x.Health>10 && !x.IsZombie && x.Distance(ObjectManager.Player) > 475f && x.Health < ObjectManager.Player.CalculateDamageOnUnit(x, DamageType.Physical, (float)(new [] {10, 60, 110, 160, 210}[W.Level - 1] + 1.4*(ObjectManager.Player.TotalAttackDamage)))))
             {
-                var minion = EntityManager.MinionsAndMonsters.EnemyMinions.Any(x=>!x.IsDead && x.IsVisible && x.Health>0 && x.Distance(unit)<200);
-                if (unit.IsValidTarget() && !minion)
-                {
-                    if (unit.Distance(ObjectManager.Player) < ObjectManager.Player.AttackRange + 130f)
-                    {
-                        var aadmg = ObjectManager.Player.CalculateDamageOnUnit(unit, DamageType.Physical, (float)(1.1 * ObjectManager.Player.TotalAttackDamage));
-                        if (!CanAttack && AttackIsDone && unit.Health > wm["waa"].Cast<Slider>().CurrentValue * aadmg && unit.Health < ObjectManager.Player.CalculateDamageOnUnit(unit, DamageType.Physical, (float)(new [] {10, 60, 110, 160, 210}[W.Level - 1] + 1.4*(ObjectManager.Player.TotalAttackDamage))))
-                        {
-                            W.Cast(unit);
-                        }
-                    }
-                    else
-                    {
-                        if (unit.Health < ObjectManager.Player.CalculateDamageOnUnit(unit, DamageType.Physical, (float)(new [] {10, 60, 110, 160, 210}[W.Level - 1] + 1.4*(ObjectManager.Player.TotalAttackDamage))))
-                        {
-                            W.Cast(unit);
-                        }
-                    }
-                }
+                WCast(enemy);
+            }
+        }
+        
+        static void WCast(AIHeroClient unit)
+        {
+            if (unit.Distance(ObjectManager.Player) <= ObjectManager.Player.AttackRange + 170f && unit.Health > wm["waa"].Cast<Slider>().CurrentValue * ObjectManager.Player.CalculateDamageOnUnit(unit, DamageType.Physical, (float)(1.1 * ObjectManager.Player.TotalAttackDamage)) && !CanAttack && AttackIsDone)
+            {
+                W.Cast(unit);
+            }
+            if (unit.Distance(ObjectManager.Player) > ObjectManager.Player.AttackRange + 170f && unit.Health>10)
+            {
+                W.Cast(unit);
             }
         }
 
