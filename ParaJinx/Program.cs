@@ -65,11 +65,6 @@ namespace ParaJinx
                 qm.Add("qtargets", new Slider("Q if splash can hit [x] targets", 3, 0, 5));
                 wm = menu.AddSubMenu("W Config", "wconfig");
                 wm.Add("wtest", new CheckBox("Draw -> % W accuracy"));
-                wm.AddGroupLabel("W combo On: [ks = all champions] ");
-                foreach (var enemy in EntityManager.Heroes.Enemies)
-                {
-                    wm.Add(enemy.ChampionName, new CheckBox(enemy.ChampionName));
-                }
                 wm.AddGroupLabel("W combo and ks");
                 wm.Add("wcombo", new CheckBox("W combo"));
                 wm.Add("wks", new CheckBox("W KS"));
@@ -223,7 +218,7 @@ namespace ParaJinx
         static void Wcombo()
         {
             var target = TargetSelector.GetTarget(1450f, DamageType.Physical);
-            if (target.Distance(ObjectManager.Player) > 500f && wm[target.ChampionName].Cast<CheckBox>().CurrentValue)
+            if (target.Distance(ObjectManager.Player) > 500f)
             {
                 WCast(target);
             }
