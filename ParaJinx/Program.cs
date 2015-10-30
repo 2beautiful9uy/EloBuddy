@@ -62,7 +62,7 @@ namespace ParaJinx
                 om = menu.AddSubMenu("Orb Config", "orbconfig");
                 om.AddGroupLabel("ParaOrb Settings:");
                 om.Add("useorb", new CheckBox("ParaOrb"));
-                om.Add("cancel", new Slider("If you have aa cancel noqbuff", 0, 0, 10));
+                om.Add("cancel", new Slider("If you have aa cancel", 0, 0, 10));
                 qm = menu.AddSubMenu("Q Config", "qconfig");
                 qm.AddGroupLabel("Q combo:");
                 qm.Add("qcombo", new CheckBox("Q Combo"));
