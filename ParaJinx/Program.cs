@@ -336,7 +336,7 @@ namespace ParaJinx
                     }
                     else
                     {
-                        if (Game.Time * 1000 > lastaa + ObjectManager.Player.AttackCastDelay * 1000 - 30f + (float)(om["qcancel"].Cast<Slider>().CurrentValue))
+                        if (Game.Time * 1000 > lastaa + ObjectManager.Player.AttackCastDelay * 1000 - 30f + (float)(om["cancel"].Cast<Slider>().CurrentValue))
                         {
                             Player.IssueOrder(GameObjectOrder.MoveTo, Game.CursorPos);
                         }
