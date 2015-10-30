@@ -62,8 +62,8 @@ namespace ParaJinx
                 om = menu.AddSubMenu("Orb Config", "orbconfig");
                 om.AddGroupLabel("ParaOrb Settings:");
                 om.Add("useorb", new CheckBox("ParaOrb"));
-                om.Add("qcancel", new Slider("If you have aa cancel qbuff", 0, 0, 15));
-                om.Add("cancel", new Slider("If you have aa cancel noqbuff", 0, 0, 15));
+                om.Add("qcancel", new Slider("If you have aa cancel qbuff", 0, 0, 10));
+                om.Add("cancel", new Slider("If you have aa cancel noqbuff", 0, 0, 10));
                 qm = menu.AddSubMenu("Q Config", "qconfig");
                 qm.AddGroupLabel("Q combo:");
                 qm.Add("qcombo", new CheckBox("Q Combo"));
@@ -337,7 +337,7 @@ namespace ParaJinx
                     }
                     else
                     {
-                        if (Game.Time * 1000 > lastaa + ObjectManager.Player.AttackCastDelay * 1000 - 40f + (float)(om["qcancel"].Cast<Slider>().CurrentValue))
+                        if (Game.Time * 1000 > lastaa + ObjectManager.Player.AttackCastDelay * 1000 - 30f + (float)(om["qcancel"].Cast<Slider>().CurrentValue))
                         {
                             Player.IssueOrder(GameObjectOrder.MoveTo, Game.CursorPos);
                         }
@@ -358,7 +358,7 @@ namespace ParaJinx
                     }
                     else
                     {
-                        if (Game.Time * 1000 > lastaa + ObjectManager.Player.AttackCastDelay * 1000 - 40f + (float)(om["cancel"].Cast<Slider>().CurrentValue))
+                        if (Game.Time * 1000 > lastaa + ObjectManager.Player.AttackCastDelay * 1000 - 30f + (float)(om["cancel"].Cast<Slider>().CurrentValue))
                         {
                             Player.IssueOrder(GameObjectOrder.MoveTo, Game.CursorPos);
                         }
